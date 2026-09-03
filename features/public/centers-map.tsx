@@ -2,12 +2,16 @@
 
 import * as React from "react";
 import type { MapCenter } from "@/features/map/data";
-import { formatQuantity } from "@/lib/format";
 import {
   LeafletMarkersMap,
   type MapMarker,
 } from "@/components/maps/leaflet-markers-map";
 import { markerBadge } from "@/components/maps/marker-badge";
+
+const esc = (s: string) =>
+  s.replace(/[&<>"]/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!,
+  );
 
 /**
  * Mapa de la landing pública. Cada pin lleva su letra (A, B, C…) en el mismo
@@ -27,11 +31,13 @@ export function PublicCentersMap({ centers }: { centers: MapCenter[] }) {
           label: c.name,
           badge,
           popupHtml:
-            `<strong>${c.name}</strong>` +
+            `<strong>${esc(c.name)}</strong>` +
             (c.address
-              ? `<br/><span style="color:#64748b">${c.address}</span>`
+              ? `<br/><span style="color:#64748b">${esc(c.address)}</span>`
               : "") +
-            `<br/>Inventario: <strong>${formatQuantity(c.totalStock)}</strong>`,
+            (c.phone
+              ? `<br/><a href="tel:${esc(c.phone.replace(/\s+/g, ""))}" style="color:#1d4ed8">${esc(c.phone)}</a>`
+              : ""),
         })),
     [centers],
   );

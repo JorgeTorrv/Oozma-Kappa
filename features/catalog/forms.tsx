@@ -106,6 +106,7 @@ export function CenterForm({
     name: string;
     institution: string | null;
     address: string | null;
+    phone: string | null;
     latitude: number | null;
     longitude: number | null;
   };
@@ -133,6 +134,20 @@ export function CenterForm({
                 id="institution"
                 name="institution"
                 defaultValue={defaults?.institution ?? ""}
+              />
+            </Field>
+            <Field
+              label="Teléfono de contacto (opcional)"
+              htmlFor="phone"
+              hint="Se muestra en la página pública para que la gente pueda llamar."
+            >
+              <Input
+                id="phone"
+                name="phone"
+                type="tel"
+                inputMode="tel"
+                defaultValue={defaults?.phone ?? ""}
+                placeholder="833 123 4567"
               />
             </Field>
           </div>

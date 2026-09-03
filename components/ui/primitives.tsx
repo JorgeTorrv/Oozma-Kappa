@@ -67,7 +67,7 @@ export const Input = React.forwardRef<
   <input
     ref={ref}
     className={cn(
-      "flex h-9 w-full rounded-md border border-slate-300 bg-white px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-slate-400 focus-visible:border-brand-500 disabled:cursor-not-allowed disabled:opacity-50",
+      "flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-1 text-base shadow-sm transition-colors placeholder:text-slate-400 focus-visible:border-brand-500 disabled:cursor-not-allowed disabled:opacity-50 sm:h-9 sm:text-sm",
       className,
     )}
     {...props}
@@ -83,7 +83,7 @@ export const Textarea = React.forwardRef<
   <textarea
     ref={ref}
     className={cn(
-      "flex min-h-[72px] w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm placeholder:text-slate-400 focus-visible:border-brand-500 disabled:cursor-not-allowed disabled:opacity-50",
+      "flex min-h-[72px] w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-base shadow-sm placeholder:text-slate-400 focus-visible:border-brand-500 disabled:cursor-not-allowed disabled:opacity-50 sm:text-sm",
       className,
     )}
     {...props}
@@ -99,7 +99,7 @@ export const Select = React.forwardRef<
   <select
     ref={ref}
     className={cn(
-      "flex h-9 w-full rounded-md border border-slate-300 bg-white px-3 py-1 text-sm shadow-sm focus-visible:border-brand-500 disabled:cursor-not-allowed disabled:opacity-50",
+      "flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-1 text-base shadow-sm focus-visible:border-brand-500 disabled:cursor-not-allowed disabled:opacity-50 sm:h-9 sm:text-sm",
       className,
     )}
     {...props}

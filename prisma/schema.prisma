@@ -99,6 +99,7 @@ model Center {
   name        String
   institution String?
   address     String?
+  phone       String?
   latitude    Float?
   longitude   Float?
   active      Boolean @default(true)

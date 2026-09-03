@@ -76,21 +76,38 @@ export function AppShell({
       </aside>
 
       {/* Topbar móvil */}
-      <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 lg:hidden">
-        <Link href="/inicio" className="flex items-center gap-2 font-semibold">
+      <div className="sticky top-0 z-30 flex items-center justify-between border-b border-slate-200 bg-white px-3 py-2 lg:hidden">
+        <Link
+          href="/inicio"
+          className="flex items-center gap-2 py-1 pl-1 font-semibold"
+        >
           <span className="flex size-8 items-center justify-center rounded-lg bg-brand-700 text-white">
             <Boxes className="size-4" />
           </span>
           Acopio Hub
         </Link>
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className="rounded-md p-2 hover:bg-slate-100"
-          aria-label="Abrir menú"
-        >
-          <Menu className="size-5" />
-        </button>
+        <div className="flex items-center gap-1">
+          <Link
+            href="/notificaciones"
+            className="relative flex size-11 items-center justify-center rounded-md text-slate-600 hover:bg-slate-100"
+            aria-label={`Notificaciones${unread ? `, ${unread} sin leer` : ""}`}
+          >
+            <Bell className="size-5" />
+            {unread > 0 && (
+              <span className="absolute right-1.5 top-1.5 flex min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-semibold text-white">
+                {unread > 9 ? "9+" : unread}
+              </span>
+            )}
+          </Link>
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            className="flex size-11 items-center justify-center rounded-md hover:bg-slate-100"
+            aria-label="Abrir menú"
+          >
+            <Menu className="size-5" />
+          </button>
+        </div>
       </div>
 
       {/* Drawer móvil */}

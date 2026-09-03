@@ -4,10 +4,13 @@ import { prisma } from "@/lib/db";
 export type MapCenter = {
   id: string;
   name: string;
+  institution: string | null;
   address: string | null;
+  phone: string | null;
   latitude: number | null;
   longitude: number | null;
   campaigns: string[];
+  /** Sólo para vistas internas (dashboard/mapa admin), NO para la landing pública. */
   totalStock: number;
   topArticles: { name: string; quantity: number }[];
 };
@@ -44,7 +47,9 @@ export async function getMapCenters(): Promise<MapCenter[]> {
     return {
       id: c.id,
       name: c.name,
+      institution: c.institution,
       address: c.address,
+      phone: c.phone,
       latitude: c.latitude,
       longitude: c.longitude,
       campaigns: c.campaigns.map((cc) => cc.campaign.name),

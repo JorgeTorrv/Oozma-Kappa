@@ -37,6 +37,7 @@ export default async function CenterEditPage({
               name: center.name,
               institution: center.institution,
               address: center.address,
+              phone: center.phone,
               latitude: center.latitude,
               longitude: center.longitude,
             }}

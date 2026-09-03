@@ -27,6 +27,7 @@ export const centerSchema = z.object({
   name: requiredText("Nombre", 3, 120),
   institution: optionalText(160),
   address: optionalText(240),
+  phone: optionalText(40),
   latitude: z
     .string()
     .trim()
