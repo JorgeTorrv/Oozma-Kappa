@@ -1,0 +1,1381 @@
+<title>Manual de Acopia</title>
+<meta name="description" content="Guía de uso de Acopia para coordinar centros de acopio de donaciones." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+/>
+
+<style>
+  :root {
+    /* Neutros con sesgo verde del logo de Acopia */
+    --ground: #f5f7f2;
+    --surface: #ffffff;
+    --surface-2: #eef1e9;
+    --ink: #18241c;
+    --ink-soft: #3c4b40;
+    --muted: #5f6d60;
+    --line: #dde3d6;
+    --line-strong: #c8d1bd;
+
+    --brand: #1f5c3d;
+    --brand-ink: #123a27;
+    --brand-tint: #e6efe7;
+
+    /* Colores semánticos (rol / tipo de movimiento) — distintos del acento */
+    --ok: #2f7d4f;
+    --ok-tint: #e4efe3;
+    --info: #3f6c88;
+    --info-tint: #e5edf1;
+    --warn: #9a6520;
+    --warn-tint: #f3ebdd;
+    --danger: #b03a2b;
+    --danger-tint: #f4e4e1;
+    --plum: #6a5a91;
+    --plum-tint: #ebe7f1;
+
+    --shadow: 0 1px 2px rgba(24, 36, 28, 0.05), 0 6px 20px -12px rgba(24, 36, 28, 0.18);
+
+    --font-display: "Fraunces", ui-serif, Georgia, "Times New Roman", serif;
+    --font-body: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #10140e;
+      --surface: #181d15;
+      --surface-2: #202619;
+      --ink: #e7ece0;
+      --ink-soft: #c2cbb8;
+      --muted: #93a088;
+      --line: #2c3423;
+      --line-strong: #3b4530;
+
+      --brand: #74b98f;
+      --brand-ink: #a7d8ba;
+      --brand-tint: #1b2c22;
+
+      --ok: #6cbd8b;
+      --ok-tint: #17281d;
+      --info: #7fb0cd;
+      --info-tint: #16242c;
+      --warn: #d0a05c;
+      --warn-tint: #2a2113;
+      --danger: #e08573;
+      --danger-tint: #2c1a16;
+      --plum: #a998cf;
+      --plum-tint: #211c2c;
+
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 28px -14px rgba(0, 0, 0, 0.6);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground: #10140e;
+    --surface: #181d15;
+    --surface-2: #202619;
+    --ink: #e7ece0;
+    --ink-soft: #c2cbb8;
+    --muted: #93a088;
+    --line: #2c3423;
+    --line-strong: #3b4530;
+
+    --brand: #74b98f;
+    --brand-ink: #a7d8ba;
+    --brand-tint: #1b2c22;
+
+    --ok: #6cbd8b;
+    --ok-tint: #17281d;
+    --info: #7fb0cd;
+    --info-tint: #16242c;
+    --warn: #d0a05c;
+    --warn-tint: #2a2113;
+    --danger: #e08573;
+    --danger-tint: #2c1a16;
+    --plum: #a998cf;
+    --plum-tint: #211c2c;
+
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 28px -14px rgba(0, 0, 0, 0.6);
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: clamp(1.5rem, 4vw, 4rem) clamp(1rem, 4vw, 3rem) 6rem;
+  }
+
+  /* ---------- Masthead ---------- */
+  .masthead {
+    border-bottom: 2px solid var(--brand);
+    padding-bottom: 1.6rem;
+    margin-bottom: 2.4rem;
+  }
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 0.7rem;
+  }
+  .masthead h1 {
+    font-family: var(--font-display);
+    font-optical-sizing: auto;
+    font-weight: 500;
+    font-size: clamp(2.1rem, 5vw, 3.1rem);
+    line-height: 1.08;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+    margin: 0 0 0.6rem;
+  }
+  .masthead p {
+    margin: 0;
+    max-width: 60ch;
+    color: var(--ink-soft);
+    font-size: 1.05rem;
+  }
+  .masthead .meta {
+    margin-top: 1.1rem;
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    color: var(--muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.4rem;
+  }
+
+  /* ---------- Layout ---------- */
+  .layout {
+    display: grid;
+    grid-template-columns: 232px minmax(0, 1fr);
+    gap: clamp(2rem, 5vw, 4rem);
+    align-items: start;
+  }
+  .toc {
+    position: sticky;
+    top: 1.5rem;
+    font-size: 0.86rem;
+  }
+  .toc-title {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 0.8rem;
+  }
+  .toc ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    counter-reset: toc;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+  .toc a {
+    counter-increment: toc;
+    display: flex;
+    gap: 0.6rem;
+    padding: 0.32rem 0.5rem;
+    border-radius: 6px;
+    color: var(--ink-soft);
+    text-decoration: none;
+    line-height: 1.35;
+  }
+  .toc a::before {
+    content: counter(toc, decimal-leading-zero);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--muted);
+    padding-top: 0.06rem;
+  }
+  .toc a:hover {
+    background: var(--surface-2);
+    color: var(--ink);
+  }
+
+  main {
+    min-width: 0;
+    max-width: 70ch;
+  }
+
+  /* ---------- Sections ---------- */
+  section {
+    margin-bottom: 3.4rem;
+    scroll-margin-top: 1.5rem;
+  }
+  section > h2 {
+    font-family: var(--font-display);
+    font-optical-sizing: auto;
+    font-weight: 500;
+    font-size: clamp(1.5rem, 3vw, 1.95rem);
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+    margin: 0 0 0.4rem;
+    padding-top: 1.4rem;
+    border-top: 1px solid var(--line);
+  }
+  section > .kicker {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--brand);
+    margin: 0 0 0.9rem;
+  }
+  h3 {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 1.08rem;
+    margin: 2rem 0 0.5rem;
+    color: var(--ink);
+  }
+  p {
+    margin: 0 0 1rem;
+  }
+  a {
+    color: var(--brand);
+    text-underline-offset: 2px;
+  }
+  strong {
+    font-weight: 600;
+    color: var(--ink);
+  }
+  ul,
+  ol {
+    margin: 0 0 1rem;
+    padding-left: 1.3rem;
+  }
+  li {
+    margin-bottom: 0.4rem;
+  }
+  li::marker {
+    color: var(--muted);
+  }
+
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.86em;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 0.08em 0.4em;
+  }
+  kbd {
+    font-family: var(--font-mono);
+    font-size: 0.8em;
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    border-bottom-width: 2px;
+    border-radius: 5px;
+    padding: 0.1em 0.45em;
+    color: var(--ink);
+  }
+
+  /* ---------- Role tags ---------- */
+  .roles-inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin: 0.2rem 0 1rem;
+  }
+  .tag {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    padding: 0.16rem 0.5rem;
+    border-radius: 999px;
+    border: 1px solid currentColor;
+    white-space: nowrap;
+  }
+  .tag::before {
+    content: "";
+    display: inline-block;
+    width: 0.5em;
+    height: 0.5em;
+    border-radius: 999px;
+    background: currentColor;
+    margin-right: 0.45em;
+    vertical-align: 0.04em;
+  }
+  .tag.coord { color: var(--brand); }
+  .tag.enc { color: var(--info); }
+  .tag.vol { color: var(--ok); }
+  .tag.inst { color: var(--warn); }
+  .tag.lider { color: var(--plum); }
+
+  /* ---------- Cards ---------- */
+  .grid {
+    display: grid;
+    gap: 0.9rem;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 1rem 1.1rem;
+    box-shadow: var(--shadow);
+  }
+  .card h4 {
+    margin: 0 0 0.3rem;
+    font-size: 0.98rem;
+    font-weight: 600;
+  }
+  .card p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--ink-soft);
+  }
+
+  /* module block */
+  .module {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--surface);
+    padding: 1.1rem 1.2rem 1.2rem;
+    margin-bottom: 1rem;
+  }
+  .module h3 {
+    margin: 0 0 0.5rem;
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+  }
+  .module h3 .path {
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    color: var(--muted);
+    font-weight: 400;
+  }
+  .module .who {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    margin-bottom: 0.7rem;
+  }
+  .module p:last-child,
+  .module ul:last-child {
+    margin-bottom: 0;
+  }
+
+  /* ---------- Callouts ---------- */
+  .callout {
+    border-radius: 9px;
+    padding: 0.85rem 1.05rem;
+    margin: 1.2rem 0;
+    font-size: 0.95rem;
+    border: 1px solid var(--line);
+    background: var(--surface);
+  }
+  .callout p {
+    margin: 0;
+  }
+  .callout p + p {
+    margin-top: 0.5rem;
+  }
+  .callout .label {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 0.3rem;
+  }
+  .callout.note { background: var(--brand-tint); border-color: color-mix(in srgb, var(--brand) 30%, transparent); }
+  .callout.note .label { color: var(--brand-ink); }
+  .callout.warn { background: var(--warn-tint); border-color: color-mix(in srgb, var(--warn) 35%, transparent); }
+  .callout.warn .label { color: var(--warn); }
+  .callout.rule { background: var(--surface-2); }
+  .callout.rule .label { color: var(--muted); }
+
+  /* ---------- Movement reference ---------- */
+  .mv {
+    border-left: 3px solid var(--mv-color, var(--line-strong));
+    padding: 0.1rem 0 0.1rem 1rem;
+    margin: 1.4rem 0;
+  }
+  .mv h3 {
+    margin: 0 0 0.3rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .mv .sign {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.1rem 0.45rem;
+    border-radius: 5px;
+    background: var(--mv-tint);
+    color: var(--mv-color);
+    border: 1px solid color-mix(in srgb, var(--mv-color) 40%, transparent);
+  }
+  .mv.reception { --mv-color: var(--ok); --mv-tint: var(--ok-tint); }
+  .mv.delivery { --mv-color: var(--info); --mv-tint: var(--info-tint); }
+  .mv.waste { --mv-color: var(--danger); --mv-tint: var(--danger-tint); }
+  .mv.transfer { --mv-color: var(--warn); --mv-tint: var(--warn-tint); }
+  .mv.adjust { --mv-color: var(--plum); --mv-tint: var(--plum-tint); }
+
+  /* ---------- Flow strip ---------- */
+  .flow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: 0.4rem;
+    margin: 1.2rem 0 1.4rem;
+    padding: 0;
+    list-style: none;
+  }
+  .flow li {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .flow li span {
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    border-radius: 7px;
+    padding: 0.4rem 0.7rem;
+    font-size: 0.82rem;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .flow li::after {
+    content: "\2192";
+    color: var(--muted);
+    font-family: var(--font-mono);
+  }
+  .flow li:last-child::after {
+    content: "";
+  }
+
+  /* ---------- Steps ---------- */
+  ol.steps {
+    list-style: none;
+    counter-reset: step;
+    padding: 0;
+    margin: 1.2rem 0;
+  }
+  ol.steps > li {
+    counter-increment: step;
+    position: relative;
+    padding-left: 2.6rem;
+    margin-bottom: 1.1rem;
+    min-height: 1.8rem;
+  }
+  ol.steps > li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1.8rem;
+    height: 1.8rem;
+    display: grid;
+    place-items: center;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--brand-ink);
+    background: var(--brand-tint);
+    border: 1px solid color-mix(in srgb, var(--brand) 30%, transparent);
+    border-radius: 999px;
+  }
+  ol.steps > li strong {
+    display: block;
+  }
+
+  /* ---------- Table ---------- */
+  .table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    margin: 1.2rem 0;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.9rem;
+  }
+  th,
+  td {
+    text-align: left;
+    padding: 0.6rem 0.85rem;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  thead th {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: var(--surface-2);
+  }
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  footer {
+    margin-top: 4rem;
+    padding-top: 1.4rem;
+    border-top: 1px solid var(--line);
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    color: var(--muted);
+  }
+
+  a:focus-visible,
+  .toc a:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  @media (max-width: 900px) {
+    .layout {
+      grid-template-columns: 1fr;
+    }
+    .toc {
+      position: static;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 1rem 1.1rem;
+      background: var(--surface);
+    }
+    main {
+      max-width: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      scroll-behavior: auto;
+    }
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+</style>
+
+<div class="page">
+  <header class="masthead">
+    <p class="eyebrow">Manual de uso · versión 1.0</p>
+    <h1>Manual de Acopia</h1>
+    <p>
+      Acopia coordina centros de acopio durante una emergencia: registra qué
+      donaciones físicas entran, a dónde se mueven y a quién se entregan, con un
+      inventario en vivo y trazabilidad completa. No maneja dinero.
+    </p>
+    <div class="meta">
+      <span>Público: coordinación, encargados, voluntarios e instituciones</span>
+      <span>Idioma: español (México)</span>
+    </div>
+  </header>
+
+  <div class="layout">
+    <nav class="toc" aria-label="Contenido">
+      <p class="toc-title">Contenido</p>
+      <ol>
+        <li><a href="#que-es">Qué es Acopia</a></li>
+        <li><a href="#conceptos">Conceptos básicos</a></li>
+        <li><a href="#roles">Los cinco roles</a></li>
+        <li><a href="#acceso">Entrar y moverse por la app</a></li>
+        <li><a href="#primeros-pasos">Puesta en marcha</a></li>
+        <li><a href="#voluntarios">Registro y aprobación de voluntarios</a></li>
+        <li><a href="#movimientos">Registrar movimientos</a></li>
+        <li><a href="#modulos">Módulos, uno por uno</a></li>
+        <li><a href="#flujos">Flujos completos</a></li>
+        <li><a href="#faq">Preguntas frecuentes</a></li>
+        <li><a href="#admin">Para el administrador</a></li>
+      </ol>
+    </nav>
+
+    <main>
+      <section id="que-es">
+        <p class="kicker">Introducción</p>
+        <h2>Qué es Acopia</h2>
+        <p>
+          En una emergencia, cada centro de acopio suele llevar sus donaciones en
+          su propia libreta o su propio Excel. Nadie tiene la foto completa: no se
+          sabe cuánta agua hay entre todos los centros, ni qué llegó a cada
+          institución. Acopia resuelve eso con un solo sistema.
+        </p>
+        <p>Dos ideas sostienen todo lo demás:</p>
+        <ul>
+          <li>
+            <strong>Inventario en vivo.</strong> Cada centro ve sus existencias al
+            momento. La coordinación ve las de todos.
+          </li>
+          <li>
+            <strong>Trazabilidad.</strong> Todo cambio de existencias es un
+            <em>movimiento</em> con fecha, responsable y motivo. Los movimientos
+            no se editan ni se borran: son el registro permanente.
+          </li>
+        </ul>
+        <div class="callout rule">
+          <span class="label">Regla</span>
+          <p>
+            Acopia es solo para bienes físicos (agua, alimentos, cobijas, higiene,
+            medicamentos). No hay pagos, cuentas bancarias ni datos financieros en
+            ninguna parte.
+          </p>
+        </div>
+      </section>
+
+      <section id="conceptos">
+        <p class="kicker">Vocabulario</p>
+        <h2>Conceptos básicos</h2>
+        <p>
+          Ocho palabras aparecen en toda la app. Si estas quedan claras, el resto
+          se entiende solo.
+        </p>
+        <div class="grid">
+          <div class="card">
+            <h4>Campaña</h4>
+            <p>
+              El operativo de acopio: p. ej. <em>“Apoyo por inundaciones”</em>.
+              Tiene fecha de inicio y agrupa a los centros que participan.
+            </p>
+          </div>
+          <div class="card">
+            <h4>Centro de acopio</h4>
+            <p>
+              El lugar físico donde la gente lleva sus donaciones. Tiene
+              dirección, punto en el mapa y un encargado.
+            </p>
+          </div>
+          <div class="card">
+            <h4>Artículo</h4>
+            <p>
+              Lo que se recibe, con su unidad: <em>Agua embotellada · pieza</em>,
+              <em>Arroz · kg</em>. El catálogo es compartido por todos los centros.
+            </p>
+          </div>
+          <div class="card">
+            <h4>Institución receptora</h4>
+            <p>
+              La organización a la que se canalizan los artículos: Cruz Roja, DIF,
+              un albergue. Confirma lo que recibe.
+            </p>
+          </div>
+          <div class="card">
+            <h4>Donante</h4>
+            <p>
+              Quien lleva la donación. <strong>No tiene cuenta.</strong> Sus datos
+              son opcionales; puede quedar como anónimo.
+            </p>
+          </div>
+          <div class="card">
+            <h4>Inventario</h4>
+            <p>
+              Las existencias actuales de un artículo en un centro dentro de una
+              campaña. Es un resumen que se recalcula con cada movimiento.
+            </p>
+          </div>
+          <div class="card">
+            <h4>Movimiento</h4>
+            <p>
+              Cada entrada o salida de existencias: recepción, entrega, merma,
+              transferencia o ajuste. Es la fuente de la verdad.
+            </p>
+          </div>
+          <div class="card">
+            <h4>Meta</h4>
+            <p>
+              Un objetivo de recolección para la campaña: <em>500 kg de arroz</em>.
+              La app muestra el avance como barra de progreso.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section id="roles">
+        <p class="kicker">Quién hace qué</p>
+        <h2>Los cinco roles</h2>
+        <p>
+          Cada cuenta tiene un rol. El rol decide qué menús aparecen y qué acciones
+          se permiten. Ocultar un botón no basta: el permiso también se comprueba
+          en el servidor.
+        </p>
+
+        <div class="module">
+          <h3><span class="tag coord">Coordinador general</span></h3>
+          <p>
+            Ve y hace todo. Da de alta campañas, centros, artículos e
+            instituciones; registra al primer encargado de cada centro; aprueba
+            voluntarios de cualquier centro; asigna líderes de campaña; puede crear
+            más coordinadores. Ve el panel global y el de cada centro por separado.
+          </p>
+        </div>
+
+        <div class="module">
+          <h3><span class="tag enc">Encargado de centro</span></h3>
+          <p>
+            Responsable de un centro. Registra recepciones, entregas, mermas,
+            transferencias y ajustes de <strong>su</strong> centro. Aprueba y
+            gestiona a los voluntarios de su centro desde <em>Mi equipo</em>. Ve el
+            panel, el inventario, los movimientos y la trazabilidad de su centro.
+          </p>
+        </div>
+
+        <div class="module">
+          <h3><span class="tag vol">Voluntario de centro</span></h3>
+          <p>
+            Apoya en un centro. Registra recepciones y entregas de su centro y
+            consulta el panel, el inventario y los movimientos. No hace mermas,
+            transferencias ni ajustes. Su cuenta queda
+            <strong>pendiente</strong> hasta que un encargado o el coordinador la
+            aprueba.
+          </p>
+        </div>
+
+        <div class="module">
+          <h3><span class="tag inst">Institución receptora</span></h3>
+          <p>
+            Recibe artículos de los centros. Su única pantalla es
+            <em>Entregas recibidas</em>: ve las entregas dirigidas a su institución
+            y las <strong>confirma</strong> cuando llegan.
+          </p>
+        </div>
+
+        <div class="module">
+          <h3><span class="tag lider">Líder de campaña</span></h3>
+          <p>
+            Sigue una campaña completa, en <strong>solo lectura</strong>. Ve el
+            panel, el inventario agregado, los movimientos, la trazabilidad y las
+            metas de su campaña. Puede gestionar las metas. No registra movimientos.
+          </p>
+        </div>
+      </section>
+
+      <section id="acceso">
+        <p class="kicker">Lo básico de la pantalla</p>
+        <h2>Entrar y moverse por la app</h2>
+
+        <h3>Iniciar sesión</h3>
+        <p>
+          En <code>/login</code> se entra con <strong>correo o teléfono</strong> y
+          contraseña. Da igual cuál de los dos: si la cuenta tiene teléfono, sirve
+          el teléfono; si tiene correo, sirve el correo.
+        </p>
+        <div class="callout warn">
+          <span class="label">Ojo</span>
+          <p>
+            Si una cuenta de voluntario todavía está pendiente de aprobación, al
+            intentar entrar verá el aviso <em>“pendiente de aprobación”</em> y no
+            podrá pasar hasta que la aprueben.
+          </p>
+        </div>
+
+        <h3>La navegación</h3>
+        <p>
+          A la izquierda está el menú, agrupado en <em>Operación</em>,
+          <em>Información</em> y <em>Administración</em>. Solo aparecen los módulos
+          que tu rol puede usar. En pantallas chicas el menú se abre con el botón
+          de las tres rayas y se desliza desde el borde.
+        </p>
+
+        <h3>Crear y editar: siempre en ventana flotante</h3>
+        <p>
+          En Acopia <strong>nunca</strong> hay un formulario suelto al abrir un
+          módulo. Para crear o editar algo se usa el botón que está
+          <strong>arriba a la derecha</strong> del módulo (p. ej.
+          <em>“Nuevo centro”</em>, <em>“Nueva campaña”</em>, <em>“Editar”</em> en
+          cada fila). Ese botón abre una ventana flotante con el formulario. Al
+          guardar bien, la ventana se cierra sola y aparece un aviso verde de
+          confirmación abajo.
+        </p>
+        <ul>
+          <li>Cerrar sin guardar: botón <kbd>✕</kbd>, tecla <kbd>Esc</kbd>, o clic fuera de la ventana.</li>
+          <li>Los campos obligatorios llevan asterisco. Si algo falta, el error sale debajo del campo.</li>
+        </ul>
+
+        <h3>La campana de notificaciones</h3>
+        <p>
+          Arriba a la derecha. El número rojo son los avisos sin leer: recepciones,
+          mermas, transferencias, entregas y metas alcanzadas. En
+          <em>Notificaciones</em> se ven todos y se pueden marcar como leídos.
+        </p>
+
+        <h3>El Panel</h3>
+        <p>
+          Es la pantalla de inicio (<code>/inicio</code>) y cambia según el rol:
+        </p>
+        <ul>
+          <li><span class="tag coord">Coordinador</span> — panel global; arriba puede elegir un centro para ver solo sus gráficas.</li>
+          <li><span class="tag enc">Encargado</span> / <span class="tag vol">Voluntario</span> — panel de su centro: existencias, entradas y salidas.</li>
+          <li><span class="tag lider">Líder</span> — panel de su campaña: metas, progreso e inventario agregado.</li>
+          <li><span class="tag inst">Institución</span> — directamente sus entregas por confirmar.</li>
+        </ul>
+      </section>
+
+      <section id="primeros-pasos">
+        <p class="kicker">De cero a operando</p>
+        <h2>Puesta en marcha</h2>
+        <p>
+          Este es el orden recomendado la primera vez. Todo lo hace el
+          <span class="tag coord">Coordinador general</span>, salvo el paso 7.
+        </p>
+        <ol class="steps">
+          <li>
+            <strong>Entrar</strong>
+            Inicia sesión con la cuenta de coordinador.
+          </li>
+          <li>
+            <strong>Cargar el catálogo</strong>
+            En <em>Artículos</em>, da de alta lo que se va a recibir (agua, arroz,
+            cobijas…) con su unidad. En <em>Instituciones</em>, registra a quién se
+            va a entregar (Cruz Roja, DIF, albergues).
+          </li>
+          <li>
+            <strong>Crear la campaña</strong>
+            En <em>Campañas</em> → <em>“Nueva campaña”</em>. Ponle nombre y fecha de
+            inicio.
+          </li>
+          <li>
+            <strong>Crear los centros</strong>
+            En <em>Centros</em> → <em>“Nuevo centro”</em>. Nombre, teléfono público
+            y ubicación (busca el lugar o arrastra el pin en el mapa). Marca
+            <em>“Registrar también al primer encargado”</em> para crear de una vez
+            su cuenta con teléfono y contraseña temporal.
+          </li>
+          <li>
+            <strong>Vincular centros a la campaña</strong>
+            Abre la campaña y en <em>Centros participantes</em> activa los centros
+            que participan. Un centro solo mueve inventario dentro de campañas a
+            las que está vinculado.
+          </li>
+          <li>
+            <strong>Definir metas</strong> (opcional)
+            En la campaña → <em>“Agregar meta”</em>: por artículo o por categoría,
+            con cantidad y unidad.
+          </li>
+          <li>
+            <strong>Sumar al equipo</strong>
+            Comparte el enlace <code>/registro</code> con los voluntarios, o crea
+            cuentas a mano en <em>Usuarios</em>. Un encargado también puede asignar
+            líder a su campaña.
+          </li>
+          <li>
+            <strong>Empezar a registrar</strong>
+            Con centros vinculados y catálogo cargado, encargados y voluntarios ya
+            pueden registrar recepciones.
+          </li>
+        </ol>
+      </section>
+
+      <section id="voluntarios">
+        <p class="kicker">Altas de gente</p>
+        <h2>Registro y aprobación de voluntarios</h2>
+
+        <h3>El voluntario se registra solo</h3>
+        <p>
+          Cualquiera puede entrar a <code>/registro</code> (enlace también en la
+          página pública) y llenar: nombre, apellido, <strong>teléfono</strong>
+          (obligatorio, es su identificador de acceso), correo (opcional), el
+          <strong>centro</strong> al que quiere apoyar y una contraseña.
+        </p>
+        <p>
+          Al enviar, la cuenta queda <strong>pendiente</strong>: existe, pero no
+          puede entrar todavía.
+        </p>
+
+        <h3>Alguien la aprueba</h3>
+        <ul>
+          <li>
+            El <span class="tag enc">encargado</span> de ese centro entra a
+            <em>Mi equipo</em>, ve la solicitud y pulsa <em>Aprobar</em> (o
+            <em>Rechazar</em>).
+          </li>
+          <li>
+            El <span class="tag coord">coordinador</span> puede aprobar
+            voluntarios de <strong>cualquier</strong> centro, desde
+            <em>Usuarios</em> (bloque <em>“Solicitudes de voluntariado”</em>) o
+            desde <em>Mi equipo</em>.
+          </li>
+        </ul>
+        <p>
+          Aprobada la cuenta, el voluntario ya entra con su teléfono (o correo) y
+          su contraseña.
+        </p>
+
+        <div class="callout note">
+          <span class="label">Nota</span>
+          <p>
+            Crear una cuenta a mano en <em>Usuarios</em> la deja activa de
+            inmediato, sin pasar por aprobación. El auto-registro es solo para que
+            la gente no dependa de que alguien le cree la cuenta.
+          </p>
+        </div>
+      </section>
+
+      <section id="movimientos">
+        <p class="kicker">El corazón de la operación</p>
+        <h2>Registrar movimientos</h2>
+        <p>
+          Hay cinco tipos de movimiento. Todos comparten reglas y todos se abren
+          con el botón de arriba del módulo (p. ej. <em>“Nueva recepción”</em>).
+        </p>
+
+        <div class="callout rule">
+          <span class="label">Reglas de todos los movimientos</span>
+          <p>
+            La cantidad debe ser <strong>mayor que cero</strong> y admite hasta
+            <strong>3 decimales</strong> (p. ej. <code>10.5</code>).
+          </p>
+          <p>
+            El inventario <strong>nunca queda negativo</strong>: si intentas sacar
+            más de lo que hay, la operación se rechaza.
+          </p>
+          <p>
+            El <em>centro</em> sale de tu sesión (no lo eliges). Si la campaña es
+            una sola, se elige sola.
+          </p>
+        </div>
+
+        <div class="mv reception">
+          <h3>Recepción <span class="sign">+ entra stock</span></h3>
+          <p class="who">
+            <span class="tag coord">Coordinador</span>
+            <span class="tag enc">Encargado</span>
+            <span class="tag vol">Voluntario</span>
+          </p>
+          <p>
+            Una donación que llega al centro. Eliges campaña, artículo y cantidad.
+            El donante es opcional: por defecto va como <em>anónimo</em>; si
+            quieres, agregas nombre, teléfono o correo. El inventario del centro
+            sube.
+          </p>
+        </div>
+
+        <div class="mv delivery">
+          <h3>Entrega <span class="sign">− sale stock</span></h3>
+          <p class="who">
+            <span class="tag coord">Coordinador</span>
+            <span class="tag enc">Encargado</span>
+            <span class="tag vol">Voluntario</span>
+          </p>
+          <p>
+            Artículos que salen del centro hacia una institución receptora. Eliges
+            institución, artículo y cantidad. El inventario baja al registrarla. La
+            entrega queda <strong>pendiente</strong> hasta que la institución la
+            <strong>confirma</strong> desde <em>Entregas recibidas</em> — la
+            confirmación es un acuse, no cambia el stock.
+          </p>
+        </div>
+
+        <div class="mv waste">
+          <h3>Merma <span class="sign">− sale stock</span></h3>
+          <p class="who">
+            <span class="tag coord">Coordinador</span>
+            <span class="tag enc">Encargado</span>
+          </p>
+          <p>
+            Producto que se pierde: caducidad, daño, pérdida u otro. El
+            <strong>motivo es obligatorio</strong>. Con la aprobación de mermas
+            activada (opción por defecto), la merma nace
+            <strong>pendiente de aprobación</strong> y <strong>no descuenta
+            stock</strong> hasta que el coordinador la aprueba desde el mismo
+            módulo <em>Mermas</em>. Todas las mermas —pendientes, aprobadas y
+            rechazadas— quedan en el historial de esa pantalla.
+          </p>
+        </div>
+
+        <div class="mv transfer">
+          <h3>Transferencia <span class="sign">− origen · + destino</span></h3>
+          <p class="who">
+            <span class="tag coord">Coordinador</span>
+            <span class="tag enc">Encargado</span>
+          </p>
+          <p>
+            Mover inventario de un centro a otro. Los dos centros deben participar
+            en la <strong>misma campaña</strong>. Si tú eres encargado, el centro
+            de origen es el tuyo y no se puede cambiar. La operación es
+            <strong>atómica</strong>: descuenta del origen y suma al destino en un
+            solo paso; si algo falla, no se guarda nada.
+          </p>
+        </div>
+
+        <div class="mv adjust">
+          <h3>Ajuste <span class="sign">± corrige stock</span></h3>
+          <p class="who">
+            <span class="tag coord">Coordinador</span>
+            <span class="tag enc">Encargado</span>
+          </p>
+          <p>
+            Cuadra el sistema con el conteo físico. Eliges <em>positivo</em> (había
+            más de lo registrado) o <em>negativo</em> (había menos), la cantidad de
+            la diferencia y un <strong>motivo obligatorio</strong> (p. ej.
+            <em>“Conteo físico: sobrante”</em>). Queda marcado en el historial como
+            ajuste manual.
+          </p>
+        </div>
+      </section>
+
+      <section id="modulos">
+        <p class="kicker">Referencia</p>
+        <h2>Módulos, uno por uno</h2>
+        <p>
+          Cada bloque dice quién lo ve, para qué sirve y qué se hace ahí. Las
+          etiquetas de color son los roles de la sección anterior.
+        </p>
+
+        <div class="module">
+          <h3>Panel <span class="path">/inicio</span></h3>
+          <div class="who">
+            <span class="tag coord">Coord.</span><span class="tag enc">Encargado</span><span class="tag vol">Voluntario</span><span class="tag lider">Líder</span><span class="tag inst">Institución</span>
+          </div>
+          <p>
+            Resumen visual. Existencias, entradas y salidas, gráficas y —según el
+            rol— comparación entre centros o progreso de metas. El coordinador
+            alterna entre la vista global y la de un centro concreto.
+          </p>
+        </div>
+
+        <div class="module">
+          <h3>Registrar recepción <span class="path">/recepciones</span></h3>
+          <div class="who"><span class="tag coord">Coord.</span><span class="tag enc">Encargado</span><span class="tag vol">Voluntario</span></div>
+          <p>
+            Botón <em>“Nueva recepción”</em> para el formulario; abajo, el historial
+            de recepciones de tu ámbito. Ver el tipo <em>Recepción</em> arriba.
+          </p>
+        </div>
+
+        <div class="module">
+          <h3>Entregas <span class="path">/entregas</span></h3>
+          <div class="who"><span class="tag coord">Coord.</span><span class="tag enc">Encargado</span><span class="tag vol">Voluntario</span></div>
+          <p>
+            Registrar salidas hacia instituciones y consultar el historial de
+            entregas. Necesita al menos una institución dada de alta.
+          </p>
+        </div>
+
+        <div class="module">
+          <h3>Mermas <span class="path">/mermas</span></h3>
+          <div class="who"><span class="tag coord">Coord.</span><span class="tag enc">Encargado</span></div>
+          <p>
+            Registrar mermas (encargado y coordinador) y <strong>aprobarlas o
+            rechazarlas</strong> (coordinador). Incluye el historial completo de
+            mermas de tu ámbito.
+          </p>
+        </div>
+
+        <div class="module">
+          <h3>Transferencias <span class="path">/transferencias</span></h3>
+          <div class="who"><span class="tag coord">Coord.</span><span class="tag enc">Encargado</span></div>
+          <p>
+            Mover inventario entre centros de una misma campaña. Necesita al menos
+            dos centros activos en la campaña. Abajo, el historial de salidas por
+            transferencia.
+          </p>
+        </div>
+
+        <div class="module">
+          <h3>Ajustes <span class="path">/ajustes</span></h3>
+          <div class="who"><span class="tag coord">Coord.</span><span class="tag enc">Encargado</span></div>
+          <p>
+            Correcciones de inventario contra el conteo físico, con motivo. Abajo,
+            los ajustes recientes.
+          </p>
+        </div>
+
+        <div class="module">
+          <h3>Movimientos <span class="path">/movimientos</span></h3>
+          <div class="who"><span class="tag coord">Coord.</span><span class="tag enc">Encargado</span><span class="tag vol">Voluntario</span><span class="tag lider">Líder</span></div>
+          <p>
+            El historial completo y filtrable de todos los movimientos: por
+            campaña, centro, artículo, tipo, usuario y rango de fechas. Los
+            movimientos <strong>no se editan ni se borran</strong>. Coordinador,
+            encargado y líder pueden <strong>exportar a CSV</strong> respetando los
+            filtros aplicados. Cada fila enlaza a su trazabilidad.
+          </p>
+        </div>
+
+        <div class="module">
+          <h3>Inventario <span class="path">/inventario</span></h3>
+          <div class="who"><span class="tag coord">Coord.</span><span class="tag enc">Encargado</span><span class="tag vol">Voluntario</span><span class="tag lider">Líder</span></div>
+          <p>
+            Las existencias actuales, línea por línea, con total de unidades y
+            alerta de stock bajo. El coordinador filtra por campaña y centro.
+          </p>
+        </div>
+
+        <div class="module">
+          <h3>Trazabilidad <span class="path">/trazabilidad</span></h3>
+          <div class="who"><span class="tag coord">Coord.</span><span class="tag enc">Encargado</span><span class="tag lider">Líder</span></div>
+          <p>
+            La línea de tiempo visual de un recurso: eliges campaña y artículo (o
+            llegas desde una fila de <em>Movimientos</em>) y ves el recorrido
+            <em>donación → centro → transferencias → entrega → institución</em>,
+            con fechas y responsables.
+          </p>
+        </div>
+
+        <div class="module">
+          <h3>Mapa de centros <span class="path">/mapa</span></h3>
+          <div class="who"><span class="tag coord">Coord.</span><span class="tag lider">Líder</span></div>
+          <p>
+            Los centros ubicados en el mapa, con sus existencias. La página pública
+            usa el mismo mapa pero sin números de inventario.
+          </p>
+        </div>
+
+        <div class="module">
+          <h3>Campañas <span class="path">/campanas</span></h3>
+          <div class="who"><span class="tag coord">Coord.</span><span class="tag lider">Líder</span></div>
+          <p>
+            Lista de campañas y, al abrir una: editar sus datos, activar los
+            <strong>centros participantes</strong>, asignar <strong>líderes</strong>
+            (crear uno nuevo o reutilizar uno existente) y gestionar las
+            <strong>metas</strong> con su barra de progreso. El líder entra directo
+            a la ficha de su campaña.
+          </p>
+        </div>
+
+        <div class="module">
+          <h3>Centros <span class="path">/centros</span></h3>
+          <div class="who"><span class="tag coord">Coord.</span></div>
+          <p>
+            Alta y edición de centros (nombre, teléfono público, ubicación en el
+            mapa) y, al crearlos, opción de registrar de una vez a su primer
+            encargado. Activar o desactivar centros.
+          </p>
+        </div>
+
+        <div class="module">
+          <h3>Artículos <span class="path">/articulos</span></h3>
+          <div class="who"><span class="tag coord">Coord.</span></div>
+          <p>
+            El catálogo compartido: nombre, categoría y unidad. Categorías y
+            unidades son libres (hay sugerencias). Activar o desactivar artículos.
+          </p>
+        </div>
+
+        <div class="module">
+          <h3>Instituciones <span class="path">/instituciones</span></h3>
+          <div class="who"><span class="tag coord">Coord.</span></div>
+          <p>
+            Las organizaciones receptoras: nombre, contacto, teléfono, dirección.
+            Activar o desactivar.
+          </p>
+        </div>
+
+        <div class="module">
+          <h3>Usuarios <span class="path">/usuarios</span></h3>
+          <div class="who"><span class="tag coord">Coord.</span></div>
+          <p>
+            Todas las cuentas y sus roles. Crear usuarios (teléfono obligatorio,
+            correo opcional), editarlos, cambiarles la contraseña, activarlos o
+            desactivarlos, y aprobar solicitudes de voluntariado de cualquier
+            centro. Nunca se muestran contraseñas.
+          </p>
+        </div>
+
+        <div class="module">
+          <h3>Mi equipo <span class="path">/mi-equipo</span></h3>
+          <div class="who"><span class="tag coord">Coord.</span><span class="tag enc">Encargado</span></div>
+          <p>
+            Los voluntarios: aprobar o rechazar solicitudes y administrar al
+            equipo. El encargado ve solo su centro; el coordinador, todos.
+          </p>
+        </div>
+
+        <div class="module">
+          <h3>Notificaciones <span class="path">/notificaciones</span></h3>
+          <div class="who"><span class="tag coord">Coord.</span><span class="tag enc">Encargado</span><span class="tag vol">Voluntario</span><span class="tag lider">Líder</span><span class="tag inst">Institución</span></div>
+          <p>
+            Los avisos internos, con un botón para <em>marcar todo como leído</em>.
+          </p>
+        </div>
+
+        <div class="module">
+          <h3>Entregas recibidas <span class="path">/institucion</span></h3>
+          <div class="who"><span class="tag inst">Institución</span></div>
+          <p>
+            Las entregas dirigidas a tu institución. Botón
+            <em>“Confirmar recepción”</em> cuando la donación llega físicamente.
+          </p>
+        </div>
+      </section>
+
+      <section id="flujos">
+        <p class="kicker">Ejemplos de punta a punta</p>
+        <h2>Flujos completos</h2>
+
+        <h3>Una donación, de la puerta a la institución</h3>
+        <ol class="steps">
+          <li><strong>Recepción</strong> — un <span class="tag vol">voluntario</span> del Centro Tampico registra 40 piezas de agua. El inventario de Tampico sube.</li>
+          <li><strong>Transferencia</strong> — el <span class="tag enc">encargado</span> de Tampico manda 15 piezas al Centro Madero (misma campaña). Tampico baja, Madero sube, en un solo paso.</li>
+          <li><strong>Entrega</strong> — el <span class="tag enc">encargado</span> de Madero entrega 10 piezas a Cruz Roja. El inventario de Madero baja; la entrega queda pendiente.</li>
+          <li><strong>Confirmación</strong> — Cruz Roja (<span class="tag inst">institución</span>) entra a <em>Entregas recibidas</em> y confirma.</li>
+          <li><strong>Trazabilidad</strong> — cualquiera con acceso abre <em>Trazabilidad</em> del artículo Agua y ve toda la ruta con fechas y responsables.</li>
+        </ol>
+
+        <h3>Aprobar a un voluntario</h3>
+        <ol class="steps">
+          <li>La persona se registra en <code>/registro</code> eligiendo el centro. Su cuenta queda pendiente.</li>
+          <li>El <span class="tag enc">encargado</span> de ese centro abre <em>Mi equipo</em>, ve la solicitud y pulsa <em>Aprobar</em>.</li>
+          <li>La persona ya entra con su teléfono y contraseña, y puede registrar recepciones.</li>
+        </ol>
+
+        <h3>Registrar y aprobar una merma</h3>
+        <ol class="steps">
+          <li>El <span class="tag enc">encargado</span> abre <em>Mermas</em> → <em>“Nueva merma”</em>, elige artículo, cantidad y motivo (p. ej. <em>Caducidad</em>).</li>
+          <li>La merma queda <strong>pendiente</strong>. El stock todavía no cambia.</li>
+          <li>El <span class="tag coord">coordinador</span> abre <em>Mermas</em>, revisa el bloque de pendientes y pulsa <em>Aprobar</em>. Ahí sí baja el inventario. Si la rechaza, el stock no se toca y queda registrada como rechazada.</li>
+        </ol>
+      </section>
+
+      <section id="faq">
+        <p class="kicker">Dudas comunes</p>
+        <h2>Preguntas frecuentes</h2>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Pregunta</th><th>Respuesta</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>¿Cómo cambio mi contraseña?</td>
+                <td>
+                  No hay pantalla de perfil. El <span class="tag coord">coordinador</span> la
+                  cambia por ti desde <em>Usuarios</em> → <em>Editar</em> → campo
+                  <em>“Nueva contraseña”</em>.
+                </td>
+              </tr>
+              <tr>
+                <td>Olvidé mi contraseña.</td>
+                <td>Pídele al coordinador que te asigne una nueva desde <em>Usuarios</em>.</td>
+              </tr>
+              <tr>
+                <td>¿Puedo entrar con correo en vez de teléfono?</td>
+                <td>Sí, si tu cuenta tiene correo. Cualquiera de los dos funciona en <code>/login</code>.</td>
+              </tr>
+              <tr>
+                <td>Registré una recepción y no me deja elegir campaña.</td>
+                <td>
+                  Si tu centro solo participa en una campaña, se selecciona sola.
+                  Si no aparece ninguna, tu centro no está vinculado a ninguna
+                  campaña: que el coordinador lo vincule desde la ficha de la campaña.
+                </td>
+              </tr>
+              <tr>
+                <td>Quiero registrar una salida pero dice que no hay stock.</td>
+                <td>
+                  No se puede sacar más de lo que hay. Revisa el inventario del
+                  centro para esa campaña y ese artículo.
+                </td>
+              </tr>
+              <tr>
+                <td>Me equivoqué en un movimiento. ¿Lo borro?</td>
+                <td>
+                  Los movimientos no se borran ni se editan. Corrige con un
+                  <em>Ajuste</em> (positivo o negativo) explicando el motivo, o con
+                  el movimiento contrario.
+                </td>
+              </tr>
+              <tr>
+                <td>La merma no bajó el inventario.</td>
+                <td>
+                  Es lo normal: con la aprobación activada, la merma no descuenta
+                  hasta que el coordinador la aprueba en <em>Mermas</em>.
+                </td>
+              </tr>
+              <tr>
+                <td>No veo el módulo de Campañas / Centros / Usuarios.</td>
+                <td>Tu rol no tiene acceso. Esos módulos son del coordinador general.</td>
+              </tr>
+              <tr>
+                <td>El mapa al crear un centro se ve gris o cortado.</td>
+                <td>
+                  Espera un momento con la ventana abierta; el mapa se ajusta solo.
+                  Si sigue así, cierra y vuelve a abrir la ventana.
+                </td>
+              </tr>
+              <tr>
+                <td>¿El donante necesita cuenta?</td>
+                <td>No. El donante nunca tiene cuenta; sus datos son opcionales.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="admin">
+        <p class="kicker">Anexo técnico</p>
+        <h2>Para el administrador</h2>
+        <p>
+          Acopia corre en Vercel con la base de datos en Supabase (PostgreSQL). El
+          detalle de despliegue y variables está en
+          <code>docs/deploy.md</code> del repositorio.
+        </p>
+
+        <h3>Entregar el sistema vacío</h3>
+        <p>
+          Mientras se prueba, la base trae datos de ejemplo (centros, usuarios,
+          movimientos demo). Para dejarla lista para producción —sin nada de eso y
+          con una sola cuenta de coordinador general— se corre, desde la carpeta
+          del proyecto y con la conexión apuntando a la base real:
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Comando</th><th>Qué hace</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><code>npm run db:go-live</code></td>
+                <td>Simulacro: muestra cuántos centros, usuarios y movimientos hay. No borra nada.</td>
+              </tr>
+              <tr>
+                <td><code>CONFIRM=WIPE npm run db:go-live</code></td>
+                <td>
+                  Borra todos los datos y crea un único coordinador general a partir
+                  de <code>ADMIN_PHONE</code>, <code>ADMIN_PASSWORD</code> y
+                  (opcional) <code>ADMIN_EMAIL</code> / <code>ADMIN_NAME</code>.
+                </td>
+              </tr>
+              <tr>
+                <td><code>npm run db:seed</code></td>
+                <td>Vuelve a cargar los datos de ejemplo en la base que esté conectada.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout warn">
+          <span class="label">Importante</span>
+          <p>
+            El borrado es irreversible. Antes de correrlo contra una base con datos
+            reales, haz un respaldo en Supabase → <em>Database → Backups</em>.
+          </p>
+        </div>
+      </section>
+
+      <footer>
+        Acopia · Manual de uso v1.0 · Bienes físicos, sin datos financieros.
+      </footer>
+    </main>
+  </div>
+</div>
