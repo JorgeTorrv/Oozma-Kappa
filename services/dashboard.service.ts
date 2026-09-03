@@ -95,13 +95,17 @@ export async function inventoryByCenter() {
     .sort((a, b) => b.quantity - a.quantity);
 }
 
-export async function receptionsByDay(days: number) {
+export async function receptionsByDay(days: number, centerId?: string) {
   const since = new Date();
   since.setHours(0, 0, 0, 0);
   since.setDate(since.getDate() - (days - 1));
 
   const movements = await prisma.movement.findMany({
-    where: { type: MOVEMENT_TYPES.RECEPTION, createdAt: { gte: since } },
+    where: {
+      type: MOVEMENT_TYPES.RECEPTION,
+      createdAt: { gte: since },
+      ...(centerId ? { centerId } : {}),
+    },
     select: { createdAt: true, quantity: true },
   });
 
@@ -118,10 +122,13 @@ export async function receptionsByDay(days: number) {
   return [...buckets.entries()].map(([date, quantity]) => ({ date, quantity }));
 }
 
-export async function topReceivedArticles(limit: number) {
+export async function topReceivedArticles(limit: number, centerId?: string) {
   const rows = await prisma.movement.groupBy({
     by: ["articleId"],
-    where: { type: MOVEMENT_TYPES.RECEPTION },
+    where: {
+      type: MOVEMENT_TYPES.RECEPTION,
+      ...(centerId ? { centerId } : {}),
+    },
     _sum: { quantity: true },
   });
   const articles = await prisma.article.findMany({
@@ -137,9 +144,9 @@ export async function topReceivedArticles(limit: number) {
     .slice(0, limit);
 }
 
-export async function categoryDistribution() {
+export async function categoryDistribution(centerId?: string) {
   const items = await prisma.inventoryItem.findMany({
-    where: { quantity: { gt: 0 } },
+    where: { quantity: { gt: 0 }, ...(centerId ? { centerId } : {}) },
     include: { article: { select: { category: true } } },
   });
   const byCat = new Map<string, number>();
@@ -266,6 +273,12 @@ export async function getCenterDashboard(centerId: string) {
     low: it.quantity.toNumber() <= LOW_STOCK_THRESHOLD,
   }));
 
+  const [byDay, topArticles, categories] = await Promise.all([
+    receptionsByDay(14, centerId),
+    topReceivedArticles(6, centerId),
+    categoryDistribution(centerId),
+  ]);
+
   return {
     center,
     totals: { receptions, deliveries, waste, transfersIn, transfersOut },
@@ -273,6 +286,15 @@ export async function getCenterDashboard(centerId: string) {
     lowStock: stockRows.filter((r) => r.low),
     totalStock: stockRows.reduce((s, r) => s + r.quantity, 0),
     recent,
+    charts: {
+      receptionsByDay: byDay,
+      topArticles,
+      categoryDistribution: categories,
+      flow: [
+        { tipo: "Entradas", cantidad: receptions + transfersIn },
+        { tipo: "Salidas", cantidad: deliveries + waste + transfersOut },
+      ],
+    },
   };
 }
 
