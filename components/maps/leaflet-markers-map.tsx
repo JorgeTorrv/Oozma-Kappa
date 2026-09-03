@@ -24,10 +24,13 @@ export function LeafletMarkersMap({
   markers,
   className = "h-[420px] w-full overflow-hidden rounded-lg border border-slate-200 bg-slate-100",
   onFail,
+  minimal = false,
 }: {
   markers: MapMarker[];
   className?: string;
   onFail?: () => void;
+  /** Modo decorativo: sin controles ni arrastre (para el hero). */
+  minimal?: boolean;
 }) {
   const ref = React.useRef<HTMLDivElement>(null);
 
@@ -44,7 +47,14 @@ export function LeafletMarkersMap({
         const L = (await import("leaflet")).default;
         if (cancelled || !ref.current) return;
 
-        const theMap = L.map(ref.current, { scrollWheelZoom: false });
+        const theMap = L.map(ref.current, {
+          scrollWheelZoom: false,
+          zoomControl: !minimal,
+          dragging: !minimal,
+          doubleClickZoom: !minimal,
+          attributionControl: !minimal,
+          keyboard: !minimal,
+        });
         map = theMap;
         const layer = L.tileLayer(
           "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",

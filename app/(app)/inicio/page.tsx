@@ -1,22 +1,47 @@
 import { requireUser } from "@/lib/auth/dal";
 import { ROLES } from "@/lib/constants";
+import { prisma } from "@/lib/db";
 import { PageHeader, EmptyState } from "@/components/ui/page";
 import { CoordinatorDashboard } from "@/features/dashboard/coordinator";
 import { CenterDashboard } from "@/features/dashboard/center";
+import { CenterScopePicker } from "@/features/dashboard/center-scope-picker";
 import { LeaderDashboard } from "@/features/dashboard/leader";
 import { InstitutionDeliveries } from "@/features/institution/deliveries";
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ centro?: string }>;
+}) {
   const user = await requireUser();
 
   if (user.role === ROLES.COORDINADOR_GENERAL) {
+    const { centro } = await searchParams;
+    const centers = await prisma.center.findMany({
+      where: { active: true },
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    });
+    const selected = centro
+      ? centers.find((c) => c.id === centro)
+      : undefined;
+
     return (
       <>
         <PageHeader
-          title="Panel global"
-          description="Inventario, movimientos y progreso de todas las campañas y centros."
+          title={selected ? `Panel · ${selected.name}` : "Panel global"}
+          description={
+            selected
+              ? "Existencias, entradas, salidas y gráficas de este centro."
+              : "Inventario, movimientos y progreso de todas las campañas y centros."
+          }
         />
-        <CoordinatorDashboard />
+        <CenterScopePicker centers={centers} current={selected?.id} />
+        {selected ? (
+          <CenterDashboard centerId={selected.id} />
+        ) : (
+          <CoordinatorDashboard />
+        )}
       </>
     );
   }

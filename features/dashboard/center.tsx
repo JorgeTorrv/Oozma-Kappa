@@ -39,7 +39,7 @@ export async function CenterDashboard({ centerId }: { centerId: string }) {
       <section className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <LineChartCard
           title="Recepciones por día"
-          description="Últimos 14 días en tu centro."
+          description="Últimos 14 días en el centro."
           data={d.charts.receptionsByDay.map((r) => ({
             date: r.date.slice(5),
             quantity: r.quantity,
@@ -49,7 +49,7 @@ export async function CenterDashboard({ centerId }: { centerId: string }) {
         />
         <BarChartCard
           title="Entradas vs. salidas"
-          description="Movimiento total de tu centro."
+          description="Movimiento total del centro."
           data={d.charts.flow}
           xKey="tipo"
           yKey="cantidad"
