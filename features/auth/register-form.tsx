@@ -26,30 +26,19 @@ export function RegisterForm({ centers }: { centers: Center[] }) {
         </Field>
       </div>
 
-      <Field
-        label="Teléfono"
-        htmlFor="phone"
-        error={errs.phone}
-        hint="Teléfono o correo: deja al menos uno."
-      >
+      <Field label="Teléfono" htmlFor="phone" error={errs.phone} required>
         <Input
           id="phone"
           name="phone"
           type="tel"
           inputMode="tel"
           autoComplete="tel"
-          placeholder="833 123 4567"
+          required
         />
       </Field>
 
-      <Field label="Correo" htmlFor="email" error={errs.email}>
-        <Input
-          id="email"
-          name="email"
-          type="email"
-          autoComplete="email"
-          placeholder="tucorreo@ejemplo.com"
-        />
+      <Field label="Correo (opcional)" htmlFor="email" error={errs.email}>
+        <Input id="email" name="email" type="email" autoComplete="email" />
       </Field>
 
       <Field label="Centro de acopio" htmlFor="centerId" error={errs.centerId} required>
