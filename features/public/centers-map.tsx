@@ -7,24 +7,30 @@ import {
   LeafletMarkersMap,
   type MapMarker,
 } from "@/components/maps/leaflet-markers-map";
+import { markerBadge } from "@/components/maps/marker-badge";
 
 /**
- * Mapa de la landing pública. Si no puede cargar, no muestra nada: debajo del
- * mapa la landing ya renderiza la lista de centros.
+ * Mapa de la landing pública. Cada pin lleva su letra (A, B, C…) en el mismo
+ * orden que la lista de centros de la página. Si no puede cargar, no muestra
+ * nada: debajo la landing ya renderiza la lista.
  */
 export function PublicCentersMap({ centers }: { centers: MapCenter[] }) {
   const markers = React.useMemo<MapMarker[]>(
     () =>
       centers
-        .filter((c) => c.latitude != null && c.longitude != null)
-        .map((c) => ({
+        .map((c, i) => ({ c, badge: markerBadge(i) }))
+        .filter(({ c }) => c.latitude != null && c.longitude != null)
+        .map(({ c, badge }) => ({
           id: c.id,
           lat: c.latitude as number,
           lng: c.longitude as number,
           label: c.name,
+          badge,
           popupHtml:
             `<strong>${c.name}</strong>` +
-            (c.address ? `<br/><span style="color:#64748b">${c.address}</span>` : "") +
+            (c.address
+              ? `<br/><span style="color:#64748b">${c.address}</span>`
+              : "") +
             `<br/>Inventario: <strong>${formatQuantity(c.totalStock)}</strong>`,
         })),
     [centers],
@@ -32,5 +38,11 @@ export function PublicCentersMap({ centers }: { centers: MapCenter[] }) {
   const [failed, setFailed] = React.useState(markers.length === 0);
 
   if (failed) return null;
-  return <LeafletMarkersMap markers={markers} onFail={() => setFailed(true)} />;
+  return (
+    <LeafletMarkersMap
+      markers={markers}
+      className="h-[360px] w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-100 sm:h-[440px]"
+      onFail={() => setFailed(true)}
+    />
+  );
 }

@@ -2,31 +2,28 @@ import { NextResponse, type NextRequest } from "next/server";
 import { SESSION_COOKIE } from "@/lib/constants";
 
 /**
- * Proxy (antes "middleware", renombrado en Next.js 16). Sólo hace comprobaciones
- * OPTIMISTAS: mira si existe la cookie de sesión para redirigir rápido. La
- * autorización real (rol, pertenencia a centro, validez de sesión) se hace SIEMPRE
- * en el servidor, en la DAL y en cada Server Action / Route Handler.
+ * Proxy (antes "middleware", renombrado en Next.js 16). Comprobación OPTIMISTA
+ * mínima: si NO hay cookie de sesión y la ruta no es pública, redirige a
+ * `/login`. Nada más.
  *
- *  - `/`         → landing pública (encontrar centros de acopio para donar)
- *  - `/login`, `/registro` → públicas; si ya hay sesión, van a `/inicio`
- *  - resto        → requiere sesión
+ * NO redirige a los usuarios "con cookie" fuera de `/login` o `/registro`: esas
+ * páginas hacen su propia verificación real contra la base y redirigen a
+ * `/inicio` sólo si la sesión es válida. Así una cookie caduca/inválida no
+ * provoca un bucle de redirecciones.
+ *
+ *  - `/`, `/login`, `/registro` → públicas
+ *  - resto                      → requiere cookie de sesión
  */
 const PUBLIC_EXACT = new Set(["/", "/login", "/registro"]);
-const AUTH_ONLY_WHEN_LOGGED_OUT = ["/login", "/registro"];
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const hasSession = Boolean(request.cookies.get(SESSION_COOKIE)?.value);
-  const isPublic = PUBLIC_EXACT.has(pathname);
 
-  if (!hasSession && !isPublic) {
+  if (!hasSession && !PUBLIC_EXACT.has(pathname)) {
     const url = new URL("/login", request.url);
     if (pathname !== "/") url.searchParams.set("next", pathname);
     return NextResponse.redirect(url);
-  }
-
-  if (hasSession && AUTH_ONLY_WHEN_LOGGED_OUT.includes(pathname)) {
-    return NextResponse.redirect(new URL("/inicio", request.url));
   }
 
   return NextResponse.next();

@@ -19,12 +19,16 @@ export default async function RegistroPage() {
   });
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-10">
+    <main className="flex min-h-dvh items-center justify-center bg-slate-50 px-4 py-10">
       <div className="w-full max-w-md">
         <div className="mb-8 flex flex-col items-center text-center">
-          <div className="mb-3 flex size-12 items-center justify-center rounded-xl bg-brand-700 text-white">
+          <Link
+            href="/"
+            className="mb-3 flex size-12 items-center justify-center rounded-xl bg-brand-700 text-white transition-colors hover:bg-brand-800"
+            aria-label="Ir al inicio"
+          >
             <Boxes className="size-6" />
-          </div>
+          </Link>
           <h1 className="text-lg font-semibold text-slate-900">
             Regístrate como voluntario
           </h1>

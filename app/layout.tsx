@@ -11,7 +11,11 @@ export const metadata: Metadata = {
     "Sistema de registro y coordinación de centros de acopio para campañas de ayuda.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="es-MX" className={inter.variable}>
       <body className="min-h-full">
