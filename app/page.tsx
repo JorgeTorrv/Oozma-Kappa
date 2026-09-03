@@ -35,7 +35,7 @@ const FEATURES = [
   },
   {
     icon: Package,
-    title: "Lleva artículos físicos",
+    title: "Lleva tus donaciones",
     body: "Agua, alimentos no perecederos, cobijas, higiene y medicamentos básicos.",
   },
   {
@@ -78,9 +78,9 @@ export default async function LandingPage() {
         />
 
         {/* nav */}
-        <header className="relative z-10 mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
+        <header className="relative z-10 mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-2 sm:px-6">
           <Link href="/" aria-label="Acopia — inicio">
-            <Logo height={60} />
+            <Logo height={88} />
           </Link>
           <nav className="flex items-center gap-1 text-sm font-medium sm:gap-2">
             <Link
@@ -118,7 +118,7 @@ export default async function LandingPage() {
               </span>
             </h1>
             <p className="mt-5 max-w-md text-base leading-relaxed text-slate-600 sm:text-lg">
-              Lleva artículos físicos al centro de acopio activo más cercano.
+              Lleva tus donaciones al centro de acopio activo más cercano.
               No necesitas cuenta.
             </p>
 
