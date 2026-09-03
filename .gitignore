@@ -12,6 +12,9 @@
 
 # testing
 /coverage
+/test-results
+/playwright-report
+/playwright/.cache
 
 # next.js
 /.next/
@@ -30,11 +33,22 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# env files — nunca subir secretos; sí se versiona .env.example
+.env
+.env.*
+!.env.example
+
+# base de datos SQLite (se genera con migraciones + seed)
+*.db
+*.db-journal
+/prisma/*.db
+/data
 
 # vercel
 .vercel
+
+# tooling local (preview / editor)
+.claude/
 
 # typescript
 *.tsbuildinfo
