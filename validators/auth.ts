@@ -8,9 +8,17 @@ export function normalizePhone(raw: string): string {
 const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const loginSchema = z.object({
-  // El identificador puede ser un correo o un teléfono.
-  identifier: z.string().trim().min(1, "Escribe tu correo o teléfono."),
-  password: z.string().min(1, "Escribe tu contraseña."),
+  // El identificador puede ser un correo o un teléfono. Se acota la longitud
+  // para no aceptar entradas absurdas ni forzar hashing sobre payloads enormes.
+  identifier: z
+    .string()
+    .trim()
+    .min(1, "Escribe tu correo o teléfono.")
+    .max(320, "Valor demasiado largo."),
+  password: z
+    .string()
+    .min(1, "Escribe tu contraseña.")
+    .max(200, "Contraseña demasiado larga."),
 });
 
 export type LoginInput = z.infer<typeof loginSchema>;

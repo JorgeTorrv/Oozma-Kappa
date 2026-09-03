@@ -19,20 +19,34 @@ import { APPROVAL_STATUS, CREATED_VIA, ROLES } from "@/lib/constants";
 import { notify } from "@/services/notification.service";
 import { assertSameOrigin } from "@/lib/auth/dal";
 
+// Hash bcrypt "de relleno" (contraseña aleatoria). Se compara contra él cuando
+// el usuario no existe para que el tiempo de respuesta no delate si el
+// correo/teléfono está registrado (defensa ante enumeración por temporización).
+const DUMMY_HASH =
+  "$2a$12$abcdefghijklmnopqrstuuWn8Vh2m0aQ9r3s4t5u6v7w8x9y0z1A2B";
+
 export async function loginAction(
   _prev: ActionState | undefined,
   formData: FormData,
 ): Promise<ActionState> {
   const result = await runAction(async () => {
+    // Consultas parametrizadas vía Prisma (sin SQL crudo) → inmune a SQL
+    // injection; además validamos y acotamos la entrada con Zod, comprobamos el
+    // origen (CSRF) y limitamos la tasa de intentos.
+    await assertSameOrigin();
     const { identifier, password } = parseForm(loginSchema, formData);
 
     const h = await headers();
     const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
-    const rl = checkLoginRateLimit(`${ip}:${identifier}`);
-    if (!rl.allowed) {
+
+    // Doble límite: por (IP + identificador) y por IP sola (evita "spray").
+    const rlPair = checkLoginRateLimit(`login:${ip}:${identifier}`, 8);
+    const rlIp = checkLoginRateLimit(`login-ip:${ip}`, 40);
+    if (!rlPair.allowed || !rlIp.allowed) {
+      const wait = Math.max(rlPair.retryAfterSec, rlIp.retryAfterSec);
       throw new AppError(
         "RATE_LIMITED",
-        `Demasiados intentos. Espera ${Math.ceil(rl.retryAfterSec / 60)} min e inténtalo de nuevo.`,
+        `Demasiados intentos. Espera ${Math.ceil(wait / 60)} min e inténtalo de nuevo.`,
       );
     }
 
@@ -57,7 +71,11 @@ export async function loginAction(
     }
 
     const invalid = fail("Correo/teléfono o contraseña incorrectos.");
-    if (!matched) return invalid;
+    if (!matched) {
+      // Igualar el coste de tiempo con el camino "usuario existe".
+      await verifyPassword(password, DUMMY_HASH);
+      return invalid;
+    }
 
     const valid = await verifyPassword(password, matched.passwordHash);
     if (!valid) return invalid;
@@ -74,7 +92,8 @@ export async function loginAction(
       return fail("Tu cuenta está desactivada. Contacta al encargado.");
     }
 
-    resetLoginRateLimit(`${ip}:${identifier}`);
+    resetLoginRateLimit(`login:${ip}:${identifier}`);
+    resetLoginRateLimit(`login-ip:${ip}`);
     await createSession(matched.id);
     return ok(undefined, "Sesión iniciada.");
   });

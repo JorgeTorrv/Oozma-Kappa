@@ -7,12 +7,12 @@ type Bucket = { count: number; resetAt: number };
 const buckets = new Map<string, Bucket>();
 
 const WINDOW_MS = 15 * 60 * 1000; // 15 min
-const MAX_ATTEMPTS = 8;
+const DEFAULT_MAX = 8;
 
-export function checkLoginRateLimit(key: string): {
-  allowed: boolean;
-  retryAfterSec: number;
-} {
+export function checkLoginRateLimit(
+  key: string,
+  max = DEFAULT_MAX,
+): { allowed: boolean; retryAfterSec: number } {
   const now = Date.now();
   const bucket = buckets.get(key);
 
@@ -22,7 +22,7 @@ export function checkLoginRateLimit(key: string): {
   }
 
   bucket.count += 1;
-  if (bucket.count > MAX_ATTEMPTS) {
+  if (bucket.count > max) {
     return {
       allowed: false,
       retryAfterSec: Math.ceil((bucket.resetAt - now) / 1000),
