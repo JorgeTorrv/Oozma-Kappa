@@ -36,7 +36,9 @@
 │ repositories/**       Acceso a datos fino (Prisma)             │
 │ lib/db.ts             Cliente Prisma (singleton)               │
 ├───────────────────────────────────────────────────────────────┤
-│ Prisma  ·  SQLite                                              │
+│ Prisma  ·  PostgreSQL (Supabase en prod, Postgres local en dev)│
+│           DATABASE_URL = conexión con pooling (runtime)         │
+│           DIRECT_URL   = conexión directa (migraciones)         │
 └───────────────────────────────────────────────────────────────┘
              ▲
    lib/permissions.ts  (matriz de capacidades, usada por UI y servidor)
@@ -44,7 +46,21 @@
    validators/**       (esquemas Zod compartidos)
 ```
 
-## Autenticación y sesión
+## Autenticación, registro y aprobación
+
+- **Login por correo O teléfono**: `parseIdentifier` decide el tipo; el teléfono
+  se compara normalizado (sólo dígitos).
+- **Auto-registro** (`/registro`, público): crea `User` con
+  `role = VOLUNTARIO_CENTRO`, `active = false`, `approvalStatus = "PENDING"`,
+  `createdVia = "SELF_REGISTRATION"`. No puede iniciar sesión hasta que
+  `approvalStatus = "APPROVED"` (lo comprueba `getSessionUser` además del login).
+- **Aprobación**: un `ENCARGADO_CENTRO` (capacidad `team.manage`, sólo su centro
+  vía `canManageVolunteer`) o un `COORDINADOR_GENERAL` (`users.manage`, cualquier
+  centro) aprueba/rechaza/reactiva desde `/mi-equipo` o `/usuarios`.
+- **Alta de centro + primer encargado**: `createCenterAction` crea el `Center` y
+  el `User` encargado en una `$transaction`.
+
+## Sesión
 
 - Login → `verifyPassword` (bcrypt) → `createSession`.
 - `Session` guarda `sha256(token)`. La cookie (`acopio_session`) lleva sólo el
@@ -68,8 +84,9 @@ centro+campaña+artículo), `Donor`, `RecipientInstitution`, `CampaignGoal`,
 `Notification`, `AuditLog`.
 
 - `Movement.type` ∈ `RECEPTION | DELIVERY | WASTE | TRANSFER_IN | TRANSFER_OUT |
-  ADJUSTMENT_POSITIVE | ADJUSTMENT_NEGATIVE` (SQLite no tiene enums nativos:
-  se validan con Zod contra `lib/constants.ts`).
+  ADJUSTMENT_POSITIVE | ADJUSTMENT_NEGATIVE` (guardados como `String` y validados
+  con Zod contra `lib/constants.ts`, para no acoplar el dominio a migraciones de
+  tipo). Igual con `role` y `approvalStatus`.
 - `Movement.status` para ciclos de vida: entregas `PENDING|CONFIRMED`, mermas
   `PENDING_APPROVAL|APPROVED|REJECTED`.
 - Índices en `Movement`: `campaignId`, `centerId`, `articleId`, `createdAt`,

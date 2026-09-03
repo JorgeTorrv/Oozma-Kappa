@@ -1,28 +1,47 @@
-# Acopio Hub — ejecución con Docker.
+# Acopio Hub — ejecución local con Docker (app + Postgres).
 #
 #   docker compose up --build
 #
-# La base SQLite se guarda en el volumen "acopio_data" (persistente entre
-# reinicios). No se usan rutas absolutas del equipo del desarrollador.
+# Los datos de Postgres se guardan en el volumen "acopio_pgdata".
+# Para apuntar a Supabase en vez del Postgres local, define DATABASE_URL /
+# DIRECT_URL en un archivo .env junto a este compose y quita el servicio `db`.
 
 services:
+  db:
+    image: postgres:16-alpine
+    container_name: acopio-db
+    environment:
+      POSTGRES_USER: acopio
+      POSTGRES_PASSWORD: acopio
+      POSTGRES_DB: acopio
+    volumes:
+      - acopio_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U acopio"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
   app:
     build:
       context: .
       dockerfile: Dockerfile
     image: acopio-hub:latest
     container_name: acopio-hub
+    depends_on:
+      db:
+        condition: service_healthy
     ports:
       - "3000:3000"
     environment:
       NODE_ENV: production
       PORT: "3000"
-      DATABASE_URL: "file:/data/acopio.db"
-      # Poner "false" para desactivar el flujo de aprobación de mermas.
+      DATABASE_URL: "postgresql://acopio:acopio@db:5432/acopio"
+      DIRECT_URL: "postgresql://acopio:acopio@db:5432/acopio"
       WASTE_APPROVAL_ENABLED: "true"
-    volumes:
-      - acopio_data:/data
+      # NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ""   # opcional
     restart: unless-stopped
 
 volumes:
-  acopio_data:
+  acopio_pgdata:

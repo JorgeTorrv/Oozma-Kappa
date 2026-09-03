@@ -6,10 +6,12 @@
 > contraseñas en texto plano en la base.
 
 **Contraseña para todas las cuentas:** `Demo1234!`
+**Se puede iniciar sesión con el correo O el teléfono** de la cuenta.
 
 | Rol | Correo | Ámbito | Para qué sirve en la demo |
 | --- | --- | --- | --- |
-| Coordinador general | `coordinador@acopio.local` | Global | Ve todo; crea campañas/centros/usuarios; aprueba mermas; exporta; dashboard global |
+| Coordinador general | `coordinador@acopio.local` | Global | Ve todo; crea campañas/centros/usuarios; aprueba mermas y voluntarios; exporta; dashboard global |
+| Coordinador general | `coordinador2@acopio.local` | Global | Demuestra que un coordinador puede crear más coordinadores |
 | Encargado de centro | `encargado.tampico@acopio.local` | Centro Tampico | Recepción, entrega, merma, transferencia, ajuste; dashboard del centro |
 | Voluntario de centro | `voluntario.tampico@acopio.local` | Centro Tampico | Sólo recepción y entrega (NO merma/ajuste/transferencia) |
 | Encargado de centro | `encargado.madero@acopio.local` | Centro Ciudad Madero | Destino/origen de transferencias; tiene una merma pendiente de aprobar |
@@ -28,6 +30,10 @@
   Deportiva.
 - **Artículos:** Agua embotellada, Arroz, Frijol, Atún enlatado, Cobijas,
   Pañales, Papel higiénico, Medicamentos básicos, Productos de limpieza.
+- **2 solicitudes de voluntariado PENDIENTES** (auto-registro): Rodrigo Salinas
+  (tel. 833-555-8080 → Centro Tampico) y Karla Fuentes
+  (karla.fuentes@example.com → Centro Ciudad Madero). Sirven para demostrar la
+  aprobación desde `/mi-equipo` (encargado) o `/usuarios` (coordinador).
 - **~39 movimientos**: varias recepciones (anónimas y con donante), entregas
   (con al menos una `PENDING` y una `CONFIRMED`), una merma aprobada y **una
   merma pendiente de aprobación**, tres transferencias y varios ajustes.

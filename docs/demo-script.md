@@ -15,6 +15,16 @@ Abrir `http://localhost:3000`. Tener a mano las cuentas (contraseña `Demo1234!`
 
 ---
 
+## Antes de iniciar sesión (versión post-evento)
+
+- **Landing pública (`/`)** — mapa + lista de centros activos con “cómo llegar”.
+  Sin cuenta para donar.
+- **Registro de voluntario (`/registro`)** — nombre, apellido, teléfono y centro
+  → “tu cuenta quedará activa cuando el encargado la apruebe”. Al intentar
+  entrar: *pendiente de aprobación*.
+- Más tarde: **Encargado → `/mi-equipo`** aprueba la solicitud; el voluntario ya
+  puede entrar (con correo **o** teléfono).
+
 ## Recorrido
 
 1. **Login como Coordinador** — `coordinador@acopio.local`.

@@ -29,6 +29,11 @@ trazabilidad visual de cada recurso.
   gráficas útiles y comparación entre centros.
 - **Trazabilidad visual**, **metas de recolección**, **exportación CSV**,
   **notificaciones internas** y **mapa de centros**.
+- **Landing pública** para que cualquiera encuentre dónde donar (sin cuenta).
+- **Auto-registro de voluntarios** con aprobación por el encargado del centro;
+  **login por correo o teléfono**; gestión de equipo por centro.
+- **Alta de centro con su primer encargado** en un paso; un coordinador puede
+  crear más coordinadores.
 
 ## Diferenciador elegido
 
@@ -73,29 +78,36 @@ spec §28 están cumplidos y verificados.
 ## Stack utilizado
 
 Next.js 16 (App Router), React 19, TypeScript strict; Tailwind CSS v4 y
-componentes propios estilo shadcn/ui; Lucide Icons; SQLite + Prisma 6 (con
-`Decimal` para cantidades); autenticación por sesión propia (cookie + tabla
+componentes propios estilo shadcn/ui; Lucide Icons; PostgreSQL (Supabase) + Prisma 6 (con
+`Decimal` para cantidades); login por correo o teléfono, sesión propia (cookie + tabla
 `Session`, token opaco, bcrypt); Zod para validación; Recharts para gráficas;
-Leaflet + OpenStreetMap para el mapa; Vitest y Playwright para pruebas; ESLint y
+OpenStreetMap/Leaflet para el mapa (Google Maps opcional con key); Vitest y Playwright para pruebas; ESLint y
 Prettier; Docker + docker-compose para portabilidad.
 
 ## Librerías / frameworks / APIs usadas
 
 - **next**, **react**, **react-dom** — framework y UI.
-- **prisma** / **@prisma/client** — ORM y acceso a SQLite.
+- **prisma** / **@prisma/client** — ORM y acceso a PostgreSQL.
+- **PostgreSQL** — base de datos (Supabase gestionado en producción; Postgres
+  local en desarrollo). Prisma con `DATABASE_URL` (pooling) + `DIRECT_URL`.
 - **zod** — validación de entrada en servidor.
 - **bcryptjs** — hash de contraseñas.
 - **tailwindcss** (v4) + **class-variance-authority**, **clsx**,
   **tailwind-merge** — estilos.
 - **lucide-react** — iconos.
 - **recharts** — gráficas del dashboard.
-- **leaflet** + **OpenStreetMap** (mosaicos públicos) — mapa de centros. Único
-  recurso de red opcional; hay respaldo en lista si no hay Internet.
+- **leaflet** + **OpenStreetMap** (mosaicos públicos) y **Nominatim** (búsqueda
+  de direcciones, sin API key) — mapa y selector de ubicación de centros. Se
+  puede cambiar a **Google Maps + Places** definiendo
+  `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`.
 - **vitest**, **@playwright/test** — pruebas.
 - **eslint**, **prettier**, **tsx** — tooling.
+- **Vercel** (hosting de la app) + **Supabase** (hosting de la BD) para el
+  despliegue.
 
-No se usan servicios de pago, bases de datos en la nube, autenticación de
-terceros, IA generativa dentro del producto, blockchain ni microservicios.
+No se usan servicios de pago obligatorios, autenticación de terceros, IA
+generativa dentro del producto, blockchain ni microservicios. Supabase se usa
+sólo como PostgreSQL gestionado (plan gratuito).
 
 ## Declaración de uso de herramientas de IA
 

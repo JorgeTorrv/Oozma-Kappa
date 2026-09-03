@@ -53,24 +53,25 @@ registra para hacerlos comprensibles de un vistazo (`/trazabilidad`).
 | --- | --- |
 | Framework | Next.js 16 (App Router) · React 19 · TypeScript (strict) |
 | UI | Tailwind CSS v4 · componentes propios estilo shadcn/ui · Lucide Icons |
-| Base de datos | SQLite |
-| ORM | Prisma 6 (cantidades con `Decimal`) |
-| Autenticación | Sesión propia basada en cookie + tabla `Session` (token opaco, `sha256` en BD) |
+| Base de datos | PostgreSQL (Supabase en la nube · Postgres local para dev) |
+| ORM | Prisma 6 (cantidades con `Decimal`, `DATABASE_URL` pooled + `DIRECT_URL`) |
+| Hosting | Vercel (app) + Supabase (BD) — ver [`docs/deploy.md`](docs/deploy.md) |
+| Autenticación | Sesión propia basada en cookie + tabla `Session` (token opaco, `sha256` en BD); login por **correo o teléfono** |
 | Validación | Zod (en cada Server Action y Route Handler) |
 | Contraseñas | bcrypt (coste 12); módulo aislado, intercambiable por Argon2id |
 | Gráficas | Recharts |
-| Mapa | Leaflet + OpenStreetMap (sin mapas de pago), con lista como respaldo |
+| Mapa | OpenStreetMap + Leaflet + búsqueda Nominatim (sin key); se auto-actualiza a Google Maps si defines `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` |
 | Pruebas | Vitest (lógica de inventario y permisos) · Playwright (flujo E2E de demo) |
 | Calidad | ESLint · Prettier |
-| Portabilidad | Docker · docker-compose (SQLite en volumen) |
-
-Todo funciona **100 % en local**. No hay servicios externos obligatorios.
+| Portabilidad | Docker · docker-compose (app + Postgres) |
 
 ## Requisitos
 
 - **Node.js 20 LTS** o superior (probado con Node 20 y 26). Ver `.nvmrc`.
 - **npm** (se versiona `package-lock.json` para builds reproducibles).
-- **Docker** *(opcional)* si se prefiere levantar con `docker compose`.
+- **PostgreSQL**: una base de Supabase (gratis) o Postgres local
+  (`brew install postgresql@16` / Docker). Ver [`docs/deploy.md`](docs/deploy.md).
+- **Docker** *(opcional)* para `docker compose up` (levanta app + Postgres).
 
 ---
 
@@ -79,38 +80,52 @@ Todo funciona **100 % en local**. No hay servicios externos obligatorios.
 ```bash
 git clone <URL-del-repo> acopio-hub
 cd acopio-hub
-cp .env.example .env
+cp .env.example .env          # pon tus DATABASE_URL / DIRECT_URL de Postgres
 npm install
-npm run setup       # prisma generate + migrate deploy + seed de demostración
-npm run dev          # http://localhost:3000
+npm run setup                 # prisma generate + migrate deploy + seed demo
+npm run dev                   # http://localhost:3000
 ```
 
 Alternativa de un solo comando (útil en la presentación, spec §33):
 
 ```bash
-npm run demo         # comprueba BD, migra, siembra si falta y arranca la app
+npm run demo                  # comprueba BD, migra, siembra si falta y arranca
+```
+
+Con Docker (incluye su propio Postgres, no necesitas nada más):
+
+```bash
+docker compose up --build
 ```
 
 ## Variables de entorno
 
-`.env.example` (cópialo a `.env`):
+`.env.example` (cópialo a `.env`). Claves principales:
 
 ```env
-DATABASE_URL="file:./dev.db"     # ruta relativa a /prisma
+# PostgreSQL — Supabase: pooler :6543 para DATABASE_URL, directa :5432 para DIRECT_URL
+DATABASE_URL="postgresql://USER:PASS@HOST:6543/postgres?pgbouncer=true&connection_limit=1"
+DIRECT_URL="postgresql://USER:PASS@HOST:5432/postgres"
 NODE_ENV="development"
-# WASTE_APPROVAL_ENABLED="true"   # "false" desactiva la aprobación de mermas
+# WASTE_APPROVAL_ENABLED="true"          # "false" desactiva la aprobación de mermas
+# NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=""     # opcional; si falta se usa OpenStreetMap
+# NOMINATIM_CONTACT_EMAIL=""             # opcional, buena práctica
 ```
 
-**Nunca se suben secretos.** `.env` está en `.gitignore`.
+**Nunca se suben secretos.** `.env` está en `.gitignore`. En Vercel se cargan
+como *Environment Variables* (secrets). Guía completa: [`docs/deploy.md`](docs/deploy.md).
 
 ## Cuentas de prueba
 
 Todas comparten la contraseña de demostración **`Demo1234!`** (sólo para
 desarrollo). Ver también [`docs/demo-accounts.md`](docs/demo-accounts.md).
 
+Puedes iniciar sesión con el **correo o el teléfono** (los que tenga la cuenta).
+
 | Rol | Correo | Ámbito |
 | --- | --- | --- |
 | Coordinador general | `coordinador@acopio.local` | Visibilidad total |
+| Coordinador general | `coordinador2@acopio.local` | Visibilidad total (2º) |
 | Encargado de centro | `encargado.tampico@acopio.local` | Centro Tampico |
 | Voluntario de centro | `voluntario.tampico@acopio.local` | Centro Tampico |
 | Encargado de centro | `encargado.madero@acopio.local` | Centro Ciudad Madero |
@@ -119,6 +134,10 @@ desarrollo). Ver también [`docs/demo-accounts.md`](docs/demo-accounts.md).
 | Institución receptora | `cruzroja@acopio.local` | Cruz Roja Tampico |
 | Institución receptora | `dif@acopio.local` | DIF Municipal |
 | Líder de campaña | `lider@acopio.local` | Apoyo por Inundaciones Zona Sur |
+
+El seed también deja **2 solicitudes de voluntariado pendientes** (Rodrigo
+Salinas → Tampico, Karla Fuentes → Ciudad Madero) para demostrar el flujo de
+aprobación. Cualquiera puede crear su propia solicitud en **`/registro`**.
 
 ## Scripts disponibles
 
@@ -145,15 +164,17 @@ desarrollo). Ver también [`docs/demo-accounts.md`](docs/demo-accounts.md).
 docker compose up --build
 ```
 
+- Levanta **dos servicios**: `db` (Postgres 16) y `app` (la aplicación).
 - La app queda en `http://localhost:3000`.
-- La base SQLite se persiste en el volumen `acopio_data` (`/data/acopio.db`).
-- Al arrancar, el contenedor aplica migraciones y, **si la base está vacía**,
-  carga los datos de demostración.
+- Los datos de Postgres se persisten en el volumen `acopio_pgdata`.
+- Al arrancar, el contenedor `app` aplica migraciones y, **si la base está
+  vacía**, carga los datos de demostración.
 - No se usan rutas absolutas del equipo del desarrollador.
 
 > **Limitación conocida:** los archivos de Docker se entregan listos pero **no se
-> pudieron ejecutar en el entorno de desarrollo** (sin Docker instalado). El
-> flujo probado y garantizado es el de `npm` descrito arriba.
+> ejecutó `docker compose up`** en el entorno de desarrollo (sin Docker
+> instalado). El flujo probado end-to-end es el de `npm` con una base Postgres
+> (Supabase o local). Guía de despliegue: [`docs/deploy.md`](docs/deploy.md).
 
 ## Estructura del proyecto
 
@@ -233,6 +254,27 @@ docker/              entrypoint.sh del contenedor.
 7. **Trazabilidad visual** — línea de tiempo del recorrido de un recurso
    (diferenciador principal).
 
+**Añadido para la versión post-evento**
+
+- **Landing pública (`/`)** — cualquier persona encuentra centros de acopio
+  activos (mapa + lista + “cómo llegar”) para ir a donar, **sin cuenta**.
+- **Auto-registro de voluntarios (`/registro`)** — el ciudadano elige el centro
+  y deja nombre + apellido y teléfono y/o correo. La cuenta nace **inactiva
+  (PENDING)** hasta que un encargado (o el coordinador) de ese centro la aprueba.
+- **Login por correo o teléfono.**
+- **Gestión de equipo (`/mi-equipo`)** — el encargado aprueba/rechaza solicitudes
+  y activa/desactiva a los voluntarios **de su centro**; el coordinador ve las
+  solicitudes de todos los centros en `/usuarios` y puede aprobar cualquiera.
+- **Alta de centro + primer encargado** en un solo formulario (coordinador);
+  el coordinador también puede crear más coordinadores generales.
+- **Dashboard del encargado con gráficas** de su propio centro.
+- **Selector de ubicación en el mapa** al crear/editar un centro: búsqueda de
+  lugares (OpenStreetMap/Nominatim, sin key) + soltar un pin para lugares no
+  registrados. Se cambia solo a **Google Maps + Places** al definir
+  `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`.
+- **PostgreSQL** (Supabase) + guía de despliegue a Vercel:
+  [`docs/deploy.md`](docs/deploy.md).
+
 ## Criterios del MVP
 
 La lista completa con su estado está en
@@ -247,13 +289,20 @@ Ver arriba (“Extras”). Todas están implementadas y demostrables.
 
 ## Limitaciones conocidas
 
-- **Docker no verificado**: los archivos están completos pero no se ejecutó
-  `docker compose up` (sin Docker en el entorno de desarrollo). El flujo `npm`
-  sí está probado de principio a fin.
-- **Rate limiting en memoria**: suficiente para una instancia local/demo; en un
-  despliegue con varias réplicas se necesitaría un almacén compartido (Redis).
+- **Docker no verificado**: los archivos (app + Postgres) están completos pero no
+  se ejecutó `docker compose up` (sin Docker en el entorno de desarrollo). El
+  flujo `npm` con Postgres (local o Supabase) sí está probado end-to-end
+  (lint, 21 pruebas Vitest, build y 1 flujo Playwright).
+- **Google Maps**: no se incluye API key (no se puede crear una que se
+  autodestruya). Por defecto funciona con OpenStreetMap sin key; `docs/deploy.md`
+  explica cómo añadir una key de Google restringida y cómo borrarla luego.
+- **Rate limiting en memoria**: suficiente para una instancia local/demo; en
+  Vercel (varias lambdas) es best-effort — para producción real, Upstash Redis.
 - **Notificaciones**: son avisos internos (filas en BD); no hay push ni correo,
-  por diseño (sin servicios de pago).
-- **Playwright**: el flujo E2E cubre el recorrido de demo principal; no hay
-  cobertura E2E exhaustiva de todas las pantallas.
+  por diseño.
+- **Alta de institución**: sólo el formulario básico (nombre/contacto/dirección);
+  no se le asigna ubicación en el mapa ni usuario inicial automáticamente.
+- **Playwright**: el flujo E2E cubre el recorrido de demo (incluye registro y
+  aprobación de voluntario); no hay cobertura E2E exhaustiva de todas las
+  pantallas.
 - La emulación de zona horaria usa `America/Mexico_City` de forma fija.
