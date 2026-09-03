@@ -58,3 +58,14 @@ body {
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 transparent;
 }
+
+/*
+ * Leaflet usa z-index altos (panes ~400, controles ~1000) que se colaban por
+ * encima del menú lateral y los toasts. `isolation: isolate` encierra todo el
+ * mapa en su propio contexto de apilamiento: internamente conserva su orden,
+ * pero frente a la página compite como una sola caja en z-index 0.
+ */
+.leaflet-container {
+  isolation: isolate;
+  z-index: 0;
+}

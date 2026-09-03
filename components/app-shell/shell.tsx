@@ -77,7 +77,7 @@ export function AppShell({
       </aside>
 
       {/* Topbar móvil */}
-      <div className="sticky top-0 z-30 flex items-center justify-between border-b border-slate-200 bg-white px-3 py-2 lg:hidden">
+      <div className="sticky top-0 z-[1001] flex items-center justify-between border-b border-slate-200 bg-white px-3 py-2 lg:hidden">
         <Link href="/" className="py-1 pl-1" aria-label="Acopia — inicio">
           <Logo height={52} />
         </Link>
@@ -108,7 +108,7 @@ export function AppShell({
       {/* Drawer móvil — siempre montado, se desliza con transición */}
       <div
         className={cn(
-          "fixed inset-0 z-50 lg:hidden",
+          "fixed inset-0 z-[1100] lg:hidden",
           open ? "pointer-events-auto" : "pointer-events-none",
         )}
         aria-hidden={!open}
