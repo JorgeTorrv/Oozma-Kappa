@@ -137,84 +137,125 @@ async function main() {
   });
 
   /* --------------------------------------------------------------- Usuarios */
-  const coordinador = await prisma.user.create({
+  const mkUser = (
+    first: string,
+    last: string,
+    email: string,
+    role: string,
+    extra: Record<string, unknown> = {},
+  ) =>
+    prisma.user.create({
+      data: {
+        name: `${first} ${last}`,
+        firstName: first,
+        lastName: last,
+        email,
+        passwordHash,
+        role,
+        approvalStatus: "APPROVED",
+        createdVia: "ADMIN",
+        ...extra,
+      },
+    });
+
+  const coordinador = await mkUser(
+    "Mariana",
+    "Cázares",
+    "coordinador@acopio.local",
+    ROLES.COORDINADOR_GENERAL,
+    { phone: "833-100-0000" },
+  );
+  await mkUser(
+    "Alejandro",
+    "Domínguez",
+    "coordinador2@acopio.local",
+    ROLES.COORDINADOR_GENERAL,
+  );
+  const encTampico = await mkUser(
+    "Jorge",
+    "Treviño",
+    "encargado.tampico@acopio.local",
+    ROLES.ENCARGADO_CENTRO,
+    { centerId: tampico.id, phone: "833-111-1111" },
+  );
+  const volTampico = await mkUser(
+    "Paola",
+    "Hernández",
+    "voluntario.tampico@acopio.local",
+    ROLES.VOLUNTARIO_CENTRO,
+    { centerId: tampico.id },
+  );
+  const encMadero = await mkUser(
+    "Luis",
+    "Ramírez",
+    "encargado.madero@acopio.local",
+    ROLES.ENCARGADO_CENTRO,
+    { centerId: madero.id },
+  );
+  const volMadero = await mkUser(
+    "Diana",
+    "Sosa",
+    "voluntario.madero@acopio.local",
+    ROLES.VOLUNTARIO_CENTRO,
+    { centerId: madero.id },
+  );
+  const encAltamira = await mkUser(
+    "Óscar",
+    "Villanueva",
+    "encargado.altamira@acopio.local",
+    ROLES.ENCARGADO_CENTRO,
+    { centerId: altamira.id },
+  );
+  await mkUser(
+    "Cruz Roja",
+    "Tampico",
+    "cruzroja@acopio.local",
+    ROLES.INSTITUCION_RECEPTORA,
+    { institutionId: cruzRoja.id },
+  );
+  await mkUser(
+    "DIF",
+    "Municipal",
+    "dif@acopio.local",
+    ROLES.INSTITUCION_RECEPTORA,
+    { institutionId: dif.id },
+  );
+  await mkUser(
+    "Sergio",
+    "Pineda",
+    "lider@acopio.local",
+    ROLES.LIDER_CAMPANA,
+    { campaignId: campaign.id },
+  );
+
+  // Solicitudes de voluntariado pendientes (auto-registro) para demostrar el
+  // flujo de aprobación por el encargado / coordinador.
+  await prisma.user.create({
     data: {
-      name: "Mariana Cázares",
-      email: "coordinador@acopio.local",
-      passwordHash,
-      role: ROLES.COORDINADOR_GENERAL,
-    },
-  });
-  const encTampico = await prisma.user.create({
-    data: {
-      name: "Jorge Treviño",
-      email: "encargado.tampico@acopio.local",
-      passwordHash,
-      role: ROLES.ENCARGADO_CENTRO,
-      centerId: tampico.id,
-    },
-  });
-  const volTampico = await prisma.user.create({
-    data: {
-      name: "Paola Hernández",
-      email: "voluntario.tampico@acopio.local",
+      name: "Rodrigo Salinas",
+      firstName: "Rodrigo",
+      lastName: "Salinas",
+      phone: "833-555-8080",
       passwordHash,
       role: ROLES.VOLUNTARIO_CENTRO,
       centerId: tampico.id,
+      active: false,
+      approvalStatus: "PENDING",
+      createdVia: "SELF_REGISTRATION",
     },
   });
-  const encMadero = await prisma.user.create({
+  await prisma.user.create({
     data: {
-      name: "Luis Ramírez",
-      email: "encargado.madero@acopio.local",
-      passwordHash,
-      role: ROLES.ENCARGADO_CENTRO,
-      centerId: madero.id,
-    },
-  });
-  const volMadero = await prisma.user.create({
-    data: {
-      name: "Diana Sosa",
-      email: "voluntario.madero@acopio.local",
+      name: "Karla Fuentes",
+      firstName: "Karla",
+      lastName: "Fuentes",
+      email: "karla.fuentes@example.com",
       passwordHash,
       role: ROLES.VOLUNTARIO_CENTRO,
       centerId: madero.id,
-    },
-  });
-  const encAltamira = await prisma.user.create({
-    data: {
-      name: "Óscar Villanueva",
-      email: "encargado.altamira@acopio.local",
-      passwordHash,
-      role: ROLES.ENCARGADO_CENTRO,
-      centerId: altamira.id,
-    },
-  });
-  await prisma.user.create({
-    data: {
-      name: "Cruz Roja Tampico (recepción)",
-      email: "cruzroja@acopio.local",
-      passwordHash,
-      role: ROLES.INSTITUCION_RECEPTORA,
-      institutionId: cruzRoja.id,
-    },
-  });
-  await prisma.user.create({
-    data: {
-      name: "DIF Municipal (recepción)",
-      email: "dif@acopio.local",
-      passwordHash,
-      role: ROLES.INSTITUCION_RECEPTORA,
-      institutionId: dif.id,
-    },
-  });
-  await prisma.user.create({
-    data: {
-      name: "Sergio Pineda",
-      email: "lider@acopio.local",
-      passwordHash,
-      role: ROLES.LIDER_CAMPANA,
-      campaignId: campaign.id,
+      active: false,
+      approvalStatus: "PENDING",
+      createdVia: "SELF_REGISTRATION",
     },
   });
 
@@ -440,6 +481,9 @@ async function main() {
       { type: "GOAL_REACHED", title: "Meta alcanzada: Higiene", body: "Se alcanzó la meta de 200 paquete para la categoría Higiene.", role: ROLES.COORDINADOR_GENERAL, link: "/campanas" },
       { type: "DELIVERY_PENDING", title: "Entrega pendiente de confirmación", body: "Centro Ciudad Madero envió 20 caja de Medicamentos básicos.", centerId: madero.id, link: "/institucion" },
       { type: "RECEPTION_CREATED", title: "Nueva recepción registrada", body: "Se registró una recepción de Productos de limpieza en Centro Tampico.", centerId: tampico.id, link: "/movimientos" },
+      { type: "VOLUNTEER_REQUEST", title: "Nueva solicitud de voluntariado", body: "Rodrigo Salinas quiere unirse a Centro Tampico.", centerId: tampico.id, link: "/mi-equipo" },
+      { type: "VOLUNTEER_REQUEST", title: "Nueva solicitud de voluntariado", body: "Karla Fuentes quiere unirse a Centro Ciudad Madero.", centerId: madero.id, link: "/mi-equipo" },
+      { type: "VOLUNTEER_REQUEST", title: "Solicitudes de voluntariado pendientes", body: "Hay 2 solicitudes de voluntariado esperando aprobación.", role: ROLES.COORDINADOR_GENERAL, link: "/usuarios" },
     ],
   });
 

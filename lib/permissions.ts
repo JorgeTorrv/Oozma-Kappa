@@ -38,6 +38,7 @@ export const CAPABILITIES = [
   "notifications.read",
   "traceability.read",
   "export.data",
+  "team.manage",
 ] as const;
 
 export type Capability = (typeof CAPABILITIES)[number];
@@ -72,6 +73,7 @@ const COORDINATOR: Capability[] = [
   "notifications.read",
   "traceability.read",
   "export.data",
+  "team.manage",
 ];
 
 const CENTER_MANAGER: Capability[] = [
@@ -86,6 +88,7 @@ const CENTER_MANAGER: Capability[] = [
   "notifications.read",
   "traceability.read",
   "export.data",
+  "team.manage",
 ];
 
 const CENTER_VOLUNTEER: Capability[] = [
@@ -171,4 +174,32 @@ export function canReadCampaign(user: Principal, campaignId: string): boolean {
   if (user.role === ROLES.COORDINADOR_GENERAL) return true;
   if (user.role === ROLES.LIDER_CAMPANA) return user.campaignId === campaignId;
   return false;
+}
+
+/**
+ * Gestión de una cuenta de voluntario:
+ *  - El coordinador general gestiona cualquier voluntario.
+ *  - El encargado sólo gestiona voluntarios de SU centro.
+ */
+export function canManageVolunteer(
+  actor: Principal,
+  volunteer: { role: string; centerId: string | null },
+): boolean {
+  if (volunteer.role !== ROLES.VOLUNTARIO_CENTRO) return false;
+  if (actor.role === ROLES.COORDINADOR_GENERAL) return true;
+  if (actor.role === ROLES.ENCARGADO_CENTRO) {
+    return actor.centerId != null && actor.centerId === volunteer.centerId;
+  }
+  return false;
+}
+
+export function assertManageVolunteer(
+  actor: Principal,
+  volunteer: { role: string; centerId: string | null },
+): void {
+  if (!canManageVolunteer(actor, volunteer)) {
+    throw new ForbiddenError(
+      "No puedes gestionar esta cuenta de voluntario.",
+    );
+  }
 }

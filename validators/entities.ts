@@ -47,6 +47,45 @@ export const centerSchema = z.object({
     ),
 });
 
+/** Alta de centro que además registra a su primer encargado (opcional). */
+export const centerWithManagerSchema = centerSchema
+  .extend({
+    managerFirstName: optionalText(80),
+    managerLastName: optionalText(80),
+    managerEmail: z
+      .string()
+      .trim()
+      .toLowerCase()
+      .optional()
+      .transform((v) => (v && v.length > 0 ? v : undefined)),
+    managerPhone: optionalText(40),
+    managerPassword: z
+      .string()
+      .optional()
+      .transform((v) => (v && v.length > 0 ? v : undefined)),
+  })
+  .superRefine((v, ctx) => {
+    const any =
+      v.managerFirstName ||
+      v.managerLastName ||
+      v.managerEmail ||
+      v.managerPhone ||
+      v.managerPassword;
+    if (!any) return;
+    if (!v.managerFirstName)
+      ctx.addIssue({ code: "custom", path: ["managerFirstName"], message: "Requerido." });
+    if (!v.managerLastName)
+      ctx.addIssue({ code: "custom", path: ["managerLastName"], message: "Requerido." });
+    if (!v.managerEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.managerEmail))
+      ctx.addIssue({ code: "custom", path: ["managerEmail"], message: "Correo válido requerido." });
+    if (!v.managerPassword || v.managerPassword.length < 8)
+      ctx.addIssue({
+        code: "custom",
+        path: ["managerPassword"],
+        message: "Mínimo 8 caracteres.",
+      });
+  });
+
 export const articleSchema = z.object({
   name: requiredText("Nombre", 2, 120),
   category: requiredText("Categoría", 2, 60),

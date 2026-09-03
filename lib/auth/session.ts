@@ -55,9 +55,11 @@ export async function destroySession(): Promise<void> {
 export type SessionUser = {
   id: string;
   name: string;
-  email: string;
+  email: string | null;
+  phone: string | null;
   role: string;
   active: boolean;
+  approvalStatus: string;
   centerId: string | null;
   institutionId: string | null;
   campaignId: string | null;
@@ -80,8 +82,10 @@ export async function getSessionUser(): Promise<SessionUser | null> {
           id: true,
           name: true,
           email: true,
+          phone: true,
           role: true,
           active: true,
+          approvalStatus: true,
           centerId: true,
           institutionId: true,
           campaignId: true,
@@ -99,7 +103,9 @@ export async function getSessionUser(): Promise<SessionUser | null> {
     return null;
   }
 
-  if (!session.user.active) return null;
+  if (!session.user.active || session.user.approvalStatus !== "APPROVED") {
+    return null;
+  }
 
   // Expiración deslizante.
   const remaining = session.expiresAt.getTime() - Date.now();

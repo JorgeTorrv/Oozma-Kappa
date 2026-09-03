@@ -77,6 +77,25 @@ export const WASTE_STATUS = {
 } as const;
 export type WasteStatus = (typeof WASTE_STATUS)[keyof typeof WASTE_STATUS];
 
+export const APPROVAL_STATUS = {
+  PENDING: "PENDING",
+  APPROVED: "APPROVED",
+  REJECTED: "REJECTED",
+} as const;
+export type ApprovalStatus =
+  (typeof APPROVAL_STATUS)[keyof typeof APPROVAL_STATUS];
+
+export const APPROVAL_STATUS_LABELS: Record<ApprovalStatus, string> = {
+  PENDING: "Pendiente de aprobación",
+  APPROVED: "Aprobado",
+  REJECTED: "Rechazado",
+};
+
+export const CREATED_VIA = {
+  ADMIN: "ADMIN",
+  SELF_REGISTRATION: "SELF_REGISTRATION",
+} as const;
+
 export const WASTE_REASONS = [
   "Caducidad",
   "Daño",
@@ -121,6 +140,9 @@ export const NOTIFICATION_TYPES = {
   DELIVERY_PENDING: "DELIVERY_PENDING",
   DELIVERY_CONFIRMED: "DELIVERY_CONFIRMED",
   GOAL_REACHED: "GOAL_REACHED",
+  VOLUNTEER_REQUEST: "VOLUNTEER_REQUEST",
+  VOLUNTEER_APPROVED: "VOLUNTEER_APPROVED",
+  VOLUNTEER_REJECTED: "VOLUNTEER_REJECTED",
 } as const;
 export type NotificationType =
   (typeof NOTIFICATION_TYPES)[keyof typeof NOTIFICATION_TYPES];

@@ -6,15 +6,18 @@ import { SESSION_COOKIE } from "@/lib/constants";
  * OPTIMISTAS: mira si existe la cookie de sesión para redirigir rápido. La
  * autorización real (rol, pertenencia a centro, validez de sesión) se hace SIEMPRE
  * en el servidor, en la DAL y en cada Server Action / Route Handler.
+ *
+ *  - `/`         → landing pública (encontrar centros de acopio para donar)
+ *  - `/login`, `/registro` → públicas; si ya hay sesión, van a `/inicio`
+ *  - resto        → requiere sesión
  */
-const PUBLIC_PATHS = ["/login"];
+const PUBLIC_EXACT = new Set(["/", "/login", "/registro"]);
+const AUTH_ONLY_WHEN_LOGGED_OUT = ["/login", "/registro"];
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const hasSession = Boolean(request.cookies.get(SESSION_COOKIE)?.value);
-  const isPublic = PUBLIC_PATHS.some(
-    (p) => pathname === p || pathname.startsWith(`${p}/`),
-  );
+  const isPublic = PUBLIC_EXACT.has(pathname);
 
   if (!hasSession && !isPublic) {
     const url = new URL("/login", request.url);
@@ -22,8 +25,8 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (hasSession && isPublic) {
-    return NextResponse.redirect(new URL("/", request.url));
+  if (hasSession && AUTH_ONLY_WHEN_LOGGED_OUT.includes(pathname)) {
+    return NextResponse.redirect(new URL("/inicio", request.url));
   }
 
   return NextResponse.next();

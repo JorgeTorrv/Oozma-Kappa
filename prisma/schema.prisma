@@ -1,25 +1,40 @@
-// Acopio Hub — Prisma schema (SQLite).
-// SQLite no soporta enums nativos: los campos "enum" se guardan como String y
-// se validan a nivel de aplicación con Zod (ver lib/constants.ts y validators/).
+// Acopio Hub — Prisma schema (PostgreSQL / Supabase).
+// Los campos "enum" se guardan como String y se validan con Zod a nivel de
+// aplicación (ver lib/constants.ts y validators/) para no acoplar el dominio a
+// migraciones de tipo.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  // Conexión con pooling (PgBouncer de Supabase) para la app en runtime.
+  url       = env("DATABASE_URL")
+  // Conexión directa (sin pooling) para migraciones y `prisma db push`.
+  directUrl = env("DIRECT_URL")
 }
 
 /// Usuarios del sistema. El donante NO tiene cuenta.
 model User {
-  id           String   @id @default(cuid())
+  id           String  @id @default(cuid())
+  // `name` = nombre completo para mostrar (se arma con firstName + lastName).
   name         String
-  email        String   @unique
-  username     String?  @unique
+  firstName    String?
+  lastName     String?
+  // Identificadores de acceso: al menos uno de email/phone. Ambos únicos.
+  email        String? @unique
+  phone        String? @unique
+  username     String? @unique
   passwordHash String
   role         String // ver ROLES en lib/constants.ts
-  active       Boolean  @default(true)
+  active       Boolean @default(true)
+  // Ciclo de aprobación para el auto-registro de voluntarios:
+  // PENDING (recién registrado) | APPROVED | REJECTED.
+  approvalStatus String  @default("APPROVED")
+  // Cómo se creó la cuenta: ADMIN | SELF_REGISTRATION.
+  createdVia     String  @default("ADMIN")
+  approvedById   String?
 
   // Relación opcional según rol.
   centerId      String?
@@ -40,6 +55,7 @@ model User {
 
   @@index([role])
   @@index([centerId])
+  @@index([approvalStatus])
 }
 
 /// Sesión de servidor. La cookie sólo guarda un token opaco aleatorio; en la
