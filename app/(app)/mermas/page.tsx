@@ -10,7 +10,9 @@ import {
 } from "@/components/ui/primitives";
 import { WasteForm } from "@/features/movements/forms";
 import { WasteApprovalList } from "@/features/movements/waste-approval";
+import { WasteHistory } from "@/features/movements/waste-history";
 import { isWasteApprovalEnabled } from "@/services/movements.service";
+import { ROLES } from "@/lib/constants";
 
 export const metadata = { title: "Mermas · Acopia" };
 
@@ -68,6 +70,22 @@ export default async function MermasPage() {
             </CardContent>
           </Card>
         )}
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Historial de mermas</CardTitle>
+            <p className="text-xs text-slate-500">
+              Todas las mermas: pendientes, aprobadas y rechazadas.
+            </p>
+          </CardHeader>
+          <CardContent>
+            <WasteHistory
+              centerId={
+                user.role === ROLES.COORDINADOR_GENERAL ? null : user.centerId
+              }
+            />
+          </CardContent>
+        </Card>
       </div>
     </>
   );
