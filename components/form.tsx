@@ -5,6 +5,7 @@ import { useFormStatus } from "react-dom";
 import { useRouter } from "next/navigation";
 import { Button, type ButtonProps } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
+import { DialogCloseContext } from "@/components/ui/dialog";
 import type { ActionState } from "@/lib/result";
 
 /** Botón de envío con estado `pending` automático (a11y + feedback, spec §22). */
@@ -52,6 +53,7 @@ export function ActionForm({
   const [state, formAction] = React.useActionState(action, undefined);
   const { toast } = useToast();
   const router = useRouter();
+  const closeDialog = React.useContext(DialogCloseContext);
   const formRef = React.useRef<HTMLFormElement>(null);
   const lastHandled = React.useRef<ActionState | undefined>(undefined);
 
@@ -63,6 +65,8 @@ export function ActionForm({
       if (resetOnSuccess) formRef.current?.reset();
       if (refreshOnSuccess) router.refresh();
       onSuccess?.(state);
+      // Si el formulario vive dentro de un modal, ciérralo al terminar bien.
+      closeDialog?.();
     } else {
       toast(state.message, "error");
     }
@@ -90,6 +94,7 @@ export function ActionButton({
 }) {
   const { toast } = useToast();
   const router = useRouter();
+  const closeDialog = React.useContext(DialogCloseContext);
   const [pending, start] = React.useTransition();
 
   return (
@@ -104,6 +109,7 @@ export function ActionButton({
           if (res.ok) {
             toast(successToast ?? res.message ?? "Listo.", "success");
             router.refresh();
+            closeDialog?.();
           } else {
             toast(res.message, "error");
           }

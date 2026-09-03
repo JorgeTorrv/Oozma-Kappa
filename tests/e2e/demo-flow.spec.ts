@@ -80,6 +80,7 @@ test("recorrido de demostración: recepción → transferencia → entrega → c
   );
 
   await page.goto("/recepciones");
+  await page.getByRole("button", { name: "Nueva recepción" }).click();
   await selectByText(page.getByLabel("Artículo"), "Agua embotellada");
   await page.getByLabel("Cantidad").fill("40");
   await page.getByRole("button", { name: "Registrar recepción" }).click();
@@ -100,6 +101,7 @@ test("recorrido de demostración: recepción → transferencia → entrega → c
   // 3. Encargado de Madero registra una entrega a Cruz Roja.
   await login(page, "encargado.madero@acopio.local");
   await page.goto("/entregas");
+  await page.getByRole("button", { name: "Nueva entrega" }).click();
   await selectByText(
     page.getByLabel("Institución receptora"),
     "Cruz Roja",

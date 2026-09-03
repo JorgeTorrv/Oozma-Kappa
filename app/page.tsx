@@ -8,7 +8,6 @@ import {
   ChevronRight,
   ArrowRight,
 } from "lucide-react";
-import { prisma } from "@/lib/db";
 import { getMapCenters } from "@/features/map/data";
 import { PublicCentersMap } from "@/features/public/centers-map";
 import { HeroMap } from "@/features/public/hero-map";
@@ -22,10 +21,6 @@ export const metadata: Metadata = {
 };
 
 export const dynamic = "force-dynamic";
-
-/** Degradado de marca, tomado del logo (verde bosque → verde medio → hoja). */
-const GRAD = "bg-gradient-to-r from-brand-800 via-brand-600 to-leaf";
-const GRAD_TEXT = "bg-gradient-to-r from-brand-800 to-brand-500";
 
 const FEATURES = [
   {
@@ -59,24 +54,12 @@ function mapsUrl(c: {
 }
 
 export default async function LandingPage() {
-  const [centers, campaign] = await Promise.all([
-    getMapCenters(),
-    prisma.campaign.findFirst({
-      where: { active: true },
-      orderBy: { startDate: "desc" },
-      select: { name: true },
-    }),
-  ]);
+  const centers = await getMapCenters();
 
   return (
     <div className="overflow-x-hidden bg-white text-slate-900">
       {/* ===================== Primera pantalla ===================== */}
       <section className="relative flex min-h-svh flex-col">
-        <div
-          aria-hidden
-          className={`pointer-events-none absolute -right-40 -top-40 size-[36rem] rounded-full opacity-10 blur-3xl ${GRAD}`}
-        />
-
         {/* nav */}
         <header className="relative z-10 mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-2 sm:px-6">
           <Link href="/" aria-label="Acopia — inicio">
@@ -112,14 +95,12 @@ export default async function LandingPage() {
         <div className="relative z-10 mx-auto grid w-full max-w-6xl flex-1 items-center gap-10 px-4 py-8 sm:px-6 lg:grid-cols-2 lg:gap-6 lg:py-10">
           <div className="order-2 lg:order-1">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-              Centros de acopio{campaign ? ` · ${campaign.name}` : ""}
+              Centros de acopio
             </p>
             <h1 className="mt-4 text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl">
               No busques mucho.
               <br />
-              <span className={`bg-clip-text text-transparent ${GRAD_TEXT}`}>
-                DONA CERCA DE TI.
-              </span>
+              <span className="text-brand-700">DONA CERCA DE TI.</span>
             </h1>
             <p className="mt-5 max-w-md text-base leading-relaxed text-slate-600 sm:text-lg">
               Lleva tus donaciones al centro de acopio activo más cercano.
@@ -129,7 +110,7 @@ export default async function LandingPage() {
             <div className="mt-8 flex flex-col items-start gap-4">
               <Link
                 href="#centros"
-                className={`inline-flex h-12 items-center gap-2 rounded-lg px-7 text-sm font-bold uppercase tracking-wide text-white shadow-lg shadow-brand-700/25 transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 ${GRAD}`}
+                className="inline-flex h-12 items-center gap-2 rounded-lg bg-brand-700 px-7 text-sm font-bold uppercase tracking-wide text-white shadow-lg shadow-brand-700/25 transition-colors hover:bg-brand-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
               >
                 Ver los {centers.length} centros
                 <ChevronRight className="size-4" />
@@ -156,9 +137,7 @@ export default async function LandingPage() {
           <ul className="mx-auto grid w-full max-w-6xl gap-6 px-4 py-8 sm:px-6 sm:py-10 md:grid-cols-3">
             {FEATURES.map((f) => (
               <li key={f.title} className="flex gap-3">
-                <span
-                  className={`flex size-10 shrink-0 items-center justify-center rounded-full text-white ${GRAD}`}
-                >
+                <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand-700 text-white">
                   <f.icon className="size-5" />
                 </span>
                 <div>
@@ -203,9 +182,7 @@ export default async function LandingPage() {
                     className="rounded-xl border border-slate-200 bg-white p-4"
                   >
                     <div className="flex gap-3">
-                      <span
-                        className={`mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white ${GRAD}`}
-                      >
+                      <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full bg-brand-700 text-xs font-bold text-white">
                         {markerBadge(i)}
                       </span>
                       <div className="min-w-0 flex-1">

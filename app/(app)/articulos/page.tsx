@@ -1,14 +1,9 @@
 import { requireCapabilityPage } from "@/lib/auth/dal";
 import { prisma } from "@/lib/db";
 import { PageHeader, EmptyState } from "@/components/ui/page";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Badge,
-} from "@/components/ui/primitives";
+import { Badge } from "@/components/ui/primitives";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
+import { DialogButton } from "@/components/ui/dialog";
 import { ArticleForm } from "@/features/catalog/forms";
 import { ToggleActiveButton } from "@/features/catalog/row-actions";
 import { toggleArticleAction } from "@/features/catalog/actions";
@@ -27,17 +22,17 @@ export default async function ArticulosPage() {
         title="Catálogo de artículos"
         description="Artículos que se pueden recibir. Categorías y unidades flexibles."
         breadcrumbs={[{ label: "Inicio", href: "/inicio" }, { label: "Artículos" }]}
+        actions={
+          <DialogButton
+            label="Nuevo artículo"
+            title="Nuevo artículo"
+            width="lg"
+          >
+            <ArticleForm />
+          </DialogButton>
+        }
       />
       <div className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Nuevo artículo</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ArticleForm />
-          </CardContent>
-        </Card>
-
         {articles.length === 0 ? (
           <EmptyState title="No hay artículos en el catálogo." />
         ) : (

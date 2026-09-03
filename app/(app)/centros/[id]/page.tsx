@@ -1,49 +1,15 @@
-import { notFound } from "next/navigation";
-import { requireCapabilityPage } from "@/lib/auth/dal";
-import { prisma } from "@/lib/db";
-import { PageHeader } from "@/components/ui/page";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/primitives";
-import { CenterForm } from "@/features/catalog/forms";
+import { redirect } from "next/navigation";
 
-export default async function CenterEditPage({
+/**
+ * La edición de centros ahora vive en una ventana flotante dentro de /centros
+ * (botón "Editar" de cada fila). Esta ruta se conserva sólo para no romper
+ * enlaces antiguos y redirige al listado.
+ */
+export default async function CenterEditRedirect({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params;
-  await requireCapabilityPage("center.update");
-  const center = await prisma.center.findUnique({ where: { id } });
-  if (!center) notFound();
-
-  return (
-    <>
-      <PageHeader
-        title={`Editar: ${center.name}`}
-        breadcrumbs={[
-          { label: "Inicio", href: "/inicio" },
-          { label: "Centros", href: "/centros" },
-          { label: center.name },
-        ]}
-      />
-      <Card className="max-w-3xl">
-        <CardHeader>
-          <CardTitle>Datos del centro</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <CenterForm
-            mode="edit"
-            centerId={center.id}
-            defaults={{
-              name: center.name,
-              institution: center.institution,
-              address: center.address,
-              phone: center.phone,
-              latitude: center.latitude,
-              longitude: center.longitude,
-            }}
-          />
-        </CardContent>
-      </Card>
-    </>
-  );
+  await params;
+  redirect("/centros");
 }

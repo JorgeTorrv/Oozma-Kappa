@@ -1,9 +1,8 @@
 "use client";
 
-import * as React from "react";
 import { TR, TD } from "@/components/ui/table";
 import { Badge } from "@/components/ui/primitives";
-import { Button } from "@/components/ui/button";
+import { DialogButton } from "@/components/ui/dialog";
 import { ToggleActiveButton } from "./row-actions";
 import { toggleUserAction } from "./actions";
 import { UserForm } from "./forms";
@@ -36,8 +35,6 @@ export function UserRow({
   institutions: Opt[];
   campaigns: Opt[];
 }) {
-  const [editing, setEditing] = React.useState(false);
-
   return (
     <>
       <TR>
@@ -64,13 +61,29 @@ export function UserRow({
         </TD>
         <TD className="text-right">
           <div className="flex justify-end gap-2">
-            <Button
-              size="sm"
+            <DialogButton
+              label="Editar"
+              title={`Editar usuario: ${user.name}`}
               variant="outline"
-              onClick={() => setEditing((v) => !v)}
+              width="lg"
             >
-              {editing ? "Cerrar" : "Editar"}
-            </Button>
+              <UserForm
+                mode="edit"
+                centers={centers}
+                institutions={institutions}
+                campaigns={campaigns}
+                defaults={{
+                  id: user.id,
+                  name: user.name,
+                  email: user.email,
+                  phone: user.phone,
+                  role: user.role,
+                  centerId: user.centerId,
+                  institutionId: user.institutionId,
+                  campaignId: user.campaignId,
+                }}
+              />
+            </DialogButton>
             {!self && (
               <ToggleActiveButton
                 id={user.id}
@@ -82,28 +95,6 @@ export function UserRow({
           </div>
         </TD>
       </TR>
-      {editing && (
-        <TR>
-          <TD colSpan={6} className="bg-slate-50">
-            <UserForm
-              mode="edit"
-              centers={centers}
-              institutions={institutions}
-              campaigns={campaigns}
-              defaults={{
-                id: user.id,
-                name: user.name,
-                email: user.email,
-                phone: user.phone,
-                role: user.role,
-                centerId: user.centerId,
-                institutionId: user.institutionId,
-                campaignId: user.campaignId,
-              }}
-            />
-          </TD>
-        </TR>
-      )}
     </>
   );
 }

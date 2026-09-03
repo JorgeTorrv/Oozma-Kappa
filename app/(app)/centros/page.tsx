@@ -1,15 +1,9 @@
-import Link from "next/link";
 import { requireCapabilityPage } from "@/lib/auth/dal";
 import { prisma } from "@/lib/db";
 import { PageHeader, EmptyState } from "@/components/ui/page";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Badge,
-} from "@/components/ui/primitives";
+import { Badge } from "@/components/ui/primitives";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
+import { DialogButton } from "@/components/ui/dialog";
 import { CenterForm } from "@/features/catalog/forms";
 import { ToggleActiveButton } from "@/features/catalog/row-actions";
 import { toggleCenterAction } from "@/features/catalog/actions";
@@ -31,17 +25,13 @@ export default async function CentrosPage() {
         title="Centros de acopio"
         description="Alta y administración de los centros de recolección."
         breadcrumbs={[{ label: "Inicio", href: "/inicio" }, { label: "Centros" }]}
+        actions={
+          <DialogButton label="Nuevo centro" title="Nuevo centro" width="xl">
+            <CenterForm />
+          </DialogButton>
+        }
       />
       <div className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Nuevo centro</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <CenterForm />
-          </CardContent>
-        </Card>
-
         {centers.length === 0 ? (
           <EmptyState title="Aún no hay centros registrados." />
         ) : (
@@ -72,12 +62,25 @@ export default async function CentrosPage() {
                   </TD>
                   <TD className="text-right">
                     <div className="flex justify-end gap-2">
-                      <Link
-                        href={`/centros/${c.id}`}
-                        className="rounded-md border border-slate-300 px-2.5 py-1 text-xs hover:bg-slate-50"
+                      <DialogButton
+                        label="Editar"
+                        title={`Editar centro: ${c.name}`}
+                        variant="outline"
+                        width="xl"
                       >
-                        Editar
-                      </Link>
+                        <CenterForm
+                          mode="edit"
+                          centerId={c.id}
+                          defaults={{
+                            name: c.name,
+                            institution: c.institution,
+                            address: c.address,
+                            phone: c.phone,
+                            latitude: c.latitude,
+                            longitude: c.longitude,
+                          }}
+                        />
+                      </DialogButton>
                       <ToggleActiveButton
                         id={c.id}
                         active={c.active}

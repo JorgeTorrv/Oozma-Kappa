@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/primitives";
 import { Table, TBody, TH, THead, TR } from "@/components/ui/table";
+import { DialogButton } from "@/components/ui/dialog";
 import { UserForm } from "@/features/catalog/forms";
 import { UserRow } from "@/features/catalog/user-row";
 import { VolunteerPanel } from "@/features/team/panel";
@@ -56,6 +57,15 @@ export default async function UsuariosPage() {
         title="Usuarios"
         description="Cuentas del sistema y sus roles. Nunca se muestran contraseñas."
         breadcrumbs={[{ label: "Inicio", href: "/inicio" }, { label: "Usuarios" }]}
+        actions={
+          <DialogButton label="Nuevo usuario" title="Nuevo usuario" width="lg">
+            <UserForm
+              centers={centers}
+              institutions={institutions}
+              campaigns={campaigns}
+            />
+          </DialogButton>
+        }
       />
 
       <div className="space-y-6">
@@ -71,19 +81,6 @@ export default async function UsuariosPage() {
             </CardContent>
           </Card>
         )}
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Nuevo usuario</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <UserForm
-              centers={centers}
-              institutions={institutions}
-              campaigns={campaigns}
-            />
-          </CardContent>
-        </Card>
 
         <Table>
           <THead>

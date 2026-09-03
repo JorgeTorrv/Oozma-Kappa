@@ -1,14 +1,9 @@
 import { requireCapabilityPage } from "@/lib/auth/dal";
 import { prisma } from "@/lib/db";
 import { PageHeader, EmptyState } from "@/components/ui/page";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Badge,
-} from "@/components/ui/primitives";
+import { Badge } from "@/components/ui/primitives";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
+import { DialogButton } from "@/components/ui/dialog";
 import { InstitutionForm } from "@/features/catalog/forms";
 import { ToggleActiveButton } from "@/features/catalog/row-actions";
 import { toggleInstitutionAction } from "@/features/catalog/actions";
@@ -31,17 +26,17 @@ export default async function InstitucionesPage() {
           { label: "Inicio", href: "/inicio" },
           { label: "Instituciones" },
         ]}
+        actions={
+          <DialogButton
+            label="Nueva institución"
+            title="Nueva institución"
+            width="lg"
+          >
+            <InstitutionForm />
+          </DialogButton>
+        }
       />
       <div className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Nueva institución</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <InstitutionForm />
-          </CardContent>
-        </Card>
-
         {institutions.length === 0 ? (
           <EmptyState title="No hay instituciones registradas." />
         ) : (

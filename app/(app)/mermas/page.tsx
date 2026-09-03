@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/primitives";
+import { DialogButton } from "@/components/ui/dialog";
 import { WasteForm } from "@/features/movements/forms";
 import { WasteApprovalList } from "@/features/movements/waste-approval";
 import { WasteHistory } from "@/features/movements/waste-history";
@@ -29,6 +30,7 @@ export default async function MermasPage() {
   const catalogs = canCreate
     ? await getMovementFormData(user.centerId)
     : null;
+  const canRegister = Boolean(catalogs && catalogs.campaigns.length > 0);
 
   return (
     <>
@@ -36,9 +38,29 @@ export default async function MermasPage() {
         title="Mermas"
         description="Registro de mermas con motivo obligatorio. Permanecen visibles en el historial."
         breadcrumbs={[{ label: "Inicio", href: "/inicio" }, { label: "Mermas" }]}
+        actions={
+          canRegister && catalogs ? (
+            <DialogButton
+              label="Nueva merma"
+              title="Registrar merma"
+              description={
+                isWasteApprovalEnabled()
+                  ? "Con la aprobación activada, la merma queda pendiente y no descuenta stock hasta que el coordinador la apruebe."
+                  : undefined
+              }
+              width="lg"
+            >
+              <WasteForm catalogs={catalogs} />
+            </DialogButton>
+          ) : undefined
+        }
       />
 
       <div className="space-y-6">
+        {canCreate && !canRegister && (
+          <EmptyState title="No hay campañas activas para tu centro." />
+        )}
+
         {canApprove && (
           <Card>
             <CardHeader>
@@ -46,27 +68,6 @@ export default async function MermasPage() {
             </CardHeader>
             <CardContent>
               <WasteApprovalList />
-            </CardContent>
-          </Card>
-        )}
-
-        {canCreate && catalogs && (
-          <Card className="max-w-2xl">
-            <CardHeader>
-              <CardTitle>Registrar merma</CardTitle>
-              {isWasteApprovalEnabled() && (
-                <p className="text-xs text-slate-500">
-                  Con la aprobación activada, la merma queda pendiente y no
-                  descuenta stock hasta que el coordinador la apruebe.
-                </p>
-              )}
-            </CardHeader>
-            <CardContent>
-              {catalogs.campaigns.length === 0 ? (
-                <EmptyState title="No hay campañas activas para tu centro." />
-              ) : (
-                <WasteForm catalogs={catalogs} />
-              )}
             </CardContent>
           </Card>
         )}

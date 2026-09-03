@@ -4,14 +4,9 @@ import { requireUser, toPrincipal } from "@/lib/auth/dal";
 import { can } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
 import { PageHeader, EmptyState } from "@/components/ui/page";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Badge,
-} from "@/components/ui/primitives";
+import { Badge } from "@/components/ui/primitives";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
+import { DialogButton } from "@/components/ui/dialog";
 import { CampaignForm } from "@/features/catalog/forms";
 import { ToggleActiveButton } from "@/features/catalog/row-actions";
 import { toggleCampaignAction } from "@/features/catalog/actions";
@@ -40,15 +35,9 @@ export default async function CampanasPage() {
         title="Campañas"
         description="Campañas de acopio y los centros que participan en cada una."
         breadcrumbs={[{ label: "Inicio", href: "/inicio" }, { label: "Campañas" }]}
-      />
-
-      <div className="space-y-6">
-        {isCoord && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Nueva campaña</CardTitle>
-            </CardHeader>
-            <CardContent>
+        actions={
+          isCoord ? (
+            <DialogButton label="Nueva campaña" title="Nueva campaña" width="lg">
               <CampaignForm
                 defaults={{
                   name: "",
@@ -57,10 +46,12 @@ export default async function CampanasPage() {
                   endDate: null,
                 }}
               />
-            </CardContent>
-          </Card>
-        )}
+            </DialogButton>
+          ) : undefined
+        }
+      />
 
+      <div className="space-y-6">
         {campaigns.length === 0 ? (
           <EmptyState title="No existen campañas activas." />
         ) : (

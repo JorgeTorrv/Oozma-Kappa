@@ -12,6 +12,7 @@ import {
   Badge,
 } from "@/components/ui/primitives";
 import { GoalProgress } from "@/components/ui/progress";
+import { DialogButton } from "@/components/ui/dialog";
 import { CampaignForm, GoalForm } from "@/features/catalog/forms";
 import { DeleteGoalButton } from "@/features/catalog/row-actions";
 import {
@@ -90,35 +91,36 @@ export default async function CampaignDetailPage({
           { label: campaign.name },
         ]}
         actions={
-          <Badge color={campaign.active ? "green" : "slate"}>
-            {campaign.active ? "Activa" : "Inactiva"}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge color={campaign.active ? "green" : "slate"}>
+              {campaign.active ? "Activa" : "Inactiva"}
+            </Badge>
+            {isCoord && (
+              <DialogButton
+                label="Editar campaña"
+                title="Datos de la campaña"
+                variant="outline"
+                width="lg"
+              >
+                <CampaignForm
+                  mode="edit"
+                  campaignId={campaign.id}
+                  defaults={{
+                    name: campaign.name,
+                    description: campaign.description,
+                    startDate: toDateInputValue(campaign.startDate),
+                    endDate: campaign.endDate
+                      ? toDateInputValue(campaign.endDate)
+                      : null,
+                  }}
+                />
+              </DialogButton>
+            )}
+          </div>
         }
       />
 
       <div className="space-y-6">
-        {isCoord && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Datos de la campaña</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CampaignForm
-                mode="edit"
-                campaignId={campaign.id}
-                defaults={{
-                  name: campaign.name,
-                  description: campaign.description,
-                  startDate: toDateInputValue(campaign.startDate),
-                  endDate: campaign.endDate
-                    ? toDateInputValue(campaign.endDate)
-                    : null,
-                }}
-              />
-            </CardContent>
-          </Card>
-        )}
-
         <Card>
           <CardHeader>
             <CardTitle>Centros participantes</CardTitle>
@@ -170,8 +172,17 @@ export default async function CampaignDetailPage({
         )}
 
         <Card>
-          <CardHeader>
+          <CardHeader className="!flex-row items-center justify-between gap-3">
             <CardTitle>Metas de recolección</CardTitle>
+            {canGoals && (
+              <DialogButton
+                label="Agregar meta"
+                title="Nueva meta de recolección"
+                width="lg"
+              >
+                <GoalForm campaignId={campaign.id} articles={articles} />
+              </DialogButton>
+            )}
           </CardHeader>
           <CardContent className="space-y-4">
             {goals.length === 0 && (
@@ -190,11 +201,6 @@ export default async function CampaignDetailPage({
                 )}
               </div>
             ))}
-            {canGoals && (
-              <div className="border-t border-slate-100 pt-4">
-                <GoalForm campaignId={campaign.id} articles={articles} />
-              </div>
-            )}
           </CardContent>
         </Card>
       </div>
