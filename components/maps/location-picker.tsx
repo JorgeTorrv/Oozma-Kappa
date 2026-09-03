@@ -37,6 +37,7 @@ export function LocationPicker({
     map: import("leaflet").Map;
     marker: import("leaflet").Marker;
     ro?: ResizeObserver;
+    timers?: ReturnType<typeof setTimeout>[];
   } | null>(null);
   const googleRef = React.useRef<{ map: unknown; marker: unknown } | null>(null);
 
@@ -80,16 +81,21 @@ export function LocationPicker({
           lng: +e.latlng.lng.toFixed(6),
         });
       });
-      // Si el mapa se monta dentro de un contenedor sin tamaño todavía (p. ej.
-      // un modal que aún no termina de abrir), Leaflet sólo pinta un trozo y el
-      // resto queda gris. Recalcular el tamaño en cuanto el contenedor lo tiene
-      // y en cada cambio de tamaño posterior.
-      const ro = new ResizeObserver(() => map.invalidateSize());
+      // Si el mapa se monta dentro de un contenedor sin tamaño definitivo (p. ej.
+      // un modal que aún se está abriendo), Leaflet sólo pide las teselas de un
+      // trozo y el resto queda gris. Forzar el recálculo varias veces mientras
+      // se asienta el layout, y además ante cualquier cambio de tamaño.
+      const bump = () => {
+        if (cancelled) return;
+        map.invalidateSize({ pan: false });
+      };
+      const timers = [0, 60, 150, 300, 600, 1000, 1600].map((ms) =>
+        setTimeout(bump, ms),
+      );
+      const ro = new ResizeObserver(bump);
       ro.observe(mapEl.current);
-      requestAnimationFrame(() => map.invalidateSize());
-      setTimeout(() => map.invalidateSize(), 250);
 
-      leafletRef.current = { map, marker, ro };
+      leafletRef.current = { map, marker, ro, timers };
     }
 
     async function initGoogle() {
@@ -127,6 +133,7 @@ export function LocationPicker({
     return () => {
       cancelled = true;
       leafletRef.current?.ro?.disconnect();
+      leafletRef.current?.timers?.forEach(clearTimeout);
       leafletRef.current?.map.remove();
       leafletRef.current = null;
       googleRef.current = null;
