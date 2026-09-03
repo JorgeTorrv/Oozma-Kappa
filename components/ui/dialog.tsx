@@ -39,11 +39,18 @@ export function DialogButton({
 }) {
   const ref = React.useRef<HTMLDialogElement>(null);
   const [mounted, setMounted] = React.useState(false);
+  // `ready` se activa una vez que el <dialog> ya está abierto y con tamaño real.
+  // El contenido (formularios, mapas de Leaflet) se monta sólo entonces, para
+  // que cualquier medición de layout use las dimensiones definitivas.
+  const [ready, setReady] = React.useState(false);
 
   const close = React.useCallback(() => ref.current?.close(), []);
   const open = () => {
     setMounted(true);
-    requestAnimationFrame(() => ref.current?.showModal());
+    requestAnimationFrame(() => {
+      ref.current?.showModal();
+      requestAnimationFrame(() => setReady(true));
+    });
   };
 
   const maxW = {
@@ -66,7 +73,10 @@ export function DialogButton({
       {mounted && (
         <dialog
           ref={ref}
-          onClose={() => setMounted(false)}
+          onClose={() => {
+            setMounted(false);
+            setReady(false);
+          }}
           onClick={(e) => {
             if (e.target === ref.current) close();
           }}
@@ -91,9 +101,9 @@ export function DialogButton({
               <X className="size-4" />
             </button>
           </div>
-          <div className="max-h-[75vh] overflow-y-auto px-5 py-4">
+          <div className="max-h-[75vh] min-h-24 overflow-y-auto px-5 py-4">
             <DialogCloseContext.Provider value={close}>
-              {children}
+              {ready ? children : null}
             </DialogCloseContext.Provider>
           </div>
         </dialog>
