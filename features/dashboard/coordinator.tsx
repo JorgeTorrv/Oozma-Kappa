@@ -78,7 +78,7 @@ export async function CoordinatorDashboard() {
           data={d.topArticles}
           xKey="article"
           yKey="quantity"
-          color="#4f9e6e"
+          color="#059669"
         />
         <PieChartCard
           title="Distribución por categoría"

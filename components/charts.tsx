@@ -23,17 +23,15 @@ import {
 } from "@/components/ui/primitives";
 import { EmptyState } from "@/components/ui/page";
 
-// Paleta derivada del logo Acopia: verdes + kraft + acero, ordenada para que
-// series contiguas se distingan bien.
 const PALETTE = [
-  "#1f5c3d", // brand-700
-  "#4f9e6e", // brand-400
-  "#b08d57", // kraft
-  "#47799a", // steel
-  "#7ba05b", // leaf
-  "#123a27", // brand-900
-  "#a3c585", // verde claro
-  "#8a6d3b", // kraft oscuro
+  "#1d4ed8",
+  "#0891b2",
+  "#7c3aed",
+  "#059669",
+  "#d97706",
+  "#dc2626",
+  "#4f46e5",
+  "#0d9488",
 ];
 
 const axis = { fontSize: 11, fill: "#64748b" } as const;
