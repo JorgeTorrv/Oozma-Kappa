@@ -12,7 +12,8 @@ type Opt = { id: string; name: string };
 type U = {
   id: string;
   name: string;
-  email: string;
+  email: string | null;
+  phone: string | null;
   role: string;
   roleLabel: string;
   active: boolean;
@@ -48,7 +49,12 @@ export function UserRow({
             </Badge>
           )}
         </TD>
-        <TD className="text-slate-500">{user.email}</TD>
+        <TD className="text-slate-500">
+          {user.phone ?? "—"}
+          {user.email && (
+            <span className="block text-xs text-slate-400">{user.email}</span>
+          )}
+        </TD>
         <TD>{user.roleLabel}</TD>
         <TD className="text-slate-500">{user.scope}</TD>
         <TD>
@@ -88,6 +94,7 @@ export function UserRow({
                 id: user.id,
                 name: user.name,
                 email: user.email,
+                phone: user.phone,
                 role: user.role,
                 centerId: user.centerId,
                 institutionId: user.institutionId,

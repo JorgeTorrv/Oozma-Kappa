@@ -19,6 +19,8 @@ import {
   toggleCampaignCenterAction,
 } from "@/features/catalog/actions";
 import { CampaignCenterToggle } from "@/features/catalog/campaign-centers";
+import { CampaignLeaders } from "@/features/catalog/campaign-leaders";
+import { ROLES } from "@/lib/constants";
 import { toDateInputValue } from "@/lib/format";
 
 export default async function CampaignDetailPage({
@@ -43,7 +45,7 @@ export default async function CampaignDetailPage({
   });
   if (!campaign) notFound();
 
-  const [allCenters, articles, goals] = await Promise.all([
+  const [allCenters, articles, goals, leaders, assignable] = await Promise.all([
     prisma.center.findMany({
       where: { active: true },
       select: { id: true, name: true },
@@ -55,6 +57,24 @@ export default async function CampaignDetailPage({
       orderBy: { name: "asc" },
     }),
     getCampaignGoalProgress(id),
+    isCoord
+      ? prisma.user.findMany({
+          where: { role: ROLES.LIDER_CAMPANA, campaignId: id },
+          select: { id: true, name: true, email: true, active: true },
+          orderBy: { name: "asc" },
+        })
+      : Promise.resolve([]),
+    // Líderes de otras campañas o sin campaña, reutilizables.
+    isCoord
+      ? prisma.user.findMany({
+          where: {
+            role: ROLES.LIDER_CAMPANA,
+            OR: [{ campaignId: null }, { campaignId: { not: id } }],
+          },
+          select: { id: true, name: true, email: true },
+          orderBy: { name: "asc" },
+        })
+      : Promise.resolve([]),
   ]);
 
   const linkedIds = new Set(campaign.centers.map((cc) => cc.centerId));
@@ -129,6 +149,25 @@ export default async function CampaignDetailPage({
             ))}
           </CardContent>
         </Card>
+
+        {isCoord && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Líderes de la campaña</CardTitle>
+              <p className="text-xs text-slate-500">
+                El líder ve el panel, inventario, movimientos y metas de esta
+                campaña (sólo lectura).
+              </p>
+            </CardHeader>
+            <CardContent>
+              <CampaignLeaders
+                campaignId={campaign.id}
+                leaders={leaders}
+                assignable={assignable}
+              />
+            </CardContent>
+          </Card>
+        )}
 
         <Card>
           <CardHeader>

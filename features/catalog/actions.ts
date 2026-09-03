@@ -15,6 +15,7 @@ import { writeAudit } from "@/lib/audit";
 import { hashPassword } from "@/lib/auth/password";
 import {
   articleSchema,
+  campaignLeaderSchema,
   campaignSchema,
   centerSchema,
   centerWithManagerSchema,
@@ -26,6 +27,41 @@ import {
 import { APPROVAL_STATUS, CREATED_VIA, ROLES } from "@/lib/constants";
 import { notify } from "@/services/notification.service";
 import { assertManageVolunteer, can } from "@/lib/permissions";
+import { normalizePhone } from "@/validators/auth";
+
+/**
+ * Verifica que el correo (si se da) y el teléfono no estén ya en uso por otra
+ * cuenta. El teléfono se compara normalizado (sólo dígitos).
+ */
+async function assertContactAvailable(opts: {
+  email?: string | null;
+  phone?: string | null;
+  excludeUserId?: string;
+}): Promise<void> {
+  if (opts.email) {
+    const hit = await prisma.user.findUnique({ where: { email: opts.email } });
+    if (hit && hit.id !== opts.excludeUserId) {
+      throw new AppError("CONFLICT", "Ya existe un usuario con ese correo.", {
+        email: ["Ya existe un usuario con ese correo."],
+      });
+    }
+  }
+  if (opts.phone) {
+    const target = normalizePhone(opts.phone);
+    const all = await prisma.user.findMany({
+      where: { phone: { not: null } },
+      select: { id: true, phone: true },
+    });
+    const clash = all.find(
+      (u) => u.phone && normalizePhone(u.phone) === target,
+    );
+    if (clash && clash.id !== opts.excludeUserId) {
+      throw new AppError("CONFLICT", "Ya existe un usuario con ese teléfono.", {
+        phone: ["Ya existe un usuario con ese teléfono."],
+      });
+    }
+  }
+}
 
 /* ------------------------------------------------------------- Campañas */
 export async function createCampaignAction(
@@ -147,18 +183,12 @@ export async function createCenterAction(
     const { user } = await requireCapability("center.create");
     const d = parseForm(centerWithManagerSchema, formData);
 
-    const wantsManager = Boolean(d.managerEmail && d.managerPassword);
+    const wantsManager = Boolean(d.managerPhone && d.managerPassword);
     if (wantsManager) {
-      const existing = await prisma.user.findUnique({
-        where: { email: d.managerEmail },
+      await assertContactAvailable({
+        email: d.managerEmail,
+        phone: d.managerPhone,
       });
-      if (existing) {
-        throw new AppError(
-          "CONFLICT",
-          "Ya existe un usuario con ese correo.",
-          { managerEmail: ["Ya existe un usuario con ese correo."] },
-        );
-      }
     }
     const managerHash = wantsManager
       ? await hashPassword(d.managerPassword as string)
@@ -181,7 +211,7 @@ export async function createCenterAction(
             name: `${d.managerFirstName} ${d.managerLastName}`,
             firstName: d.managerFirstName,
             lastName: d.managerLastName,
-            email: d.managerEmail,
+            email: d.managerEmail ?? null,
             phone: d.managerPhone ?? null,
             passwordHash: managerHash as string,
             role: ROLES.ENCARGADO_CENTRO,
@@ -370,19 +400,18 @@ export async function createUserAction(
     await assertSameOrigin();
     const { user } = await requireCapability("users.manage");
     const d = parseForm(userSchema, formData);
-    const existing = await prisma.user.findUnique({ where: { email: d.email } });
-    if (existing) {
-      throw new AppError("CONFLICT", "Ya existe un usuario con ese correo.", {
-        email: ["Ya existe un usuario con ese correo."],
-      });
-    }
+    await assertContactAvailable({ email: d.email, phone: d.phone });
     const rel = normalizeRelations(d.role, d);
     const created = await prisma.user.create({
       data: {
         name: d.name,
-        email: d.email,
+        phone: d.phone,
+        email: d.email ?? null,
         role: d.role,
         passwordHash: await hashPassword(d.password),
+        approvalStatus: APPROVAL_STATUS.APPROVED,
+        createdVia: CREATED_VIA.ADMIN,
+        approvedById: user.id,
         ...rel,
       },
     });
@@ -406,12 +435,18 @@ export async function updateUserAction(
     await assertSameOrigin();
     const { user } = await requireCapability("users.manage");
     const d = parseForm(userUpdateSchema, formData);
+    await assertContactAvailable({
+      email: d.email,
+      phone: d.phone,
+      excludeUserId: d.id,
+    });
     const rel = normalizeRelations(d.role, d);
     await prisma.user.update({
       where: { id: d.id },
       data: {
         name: d.name,
-        email: d.email,
+        email: d.email ?? null,
+        ...(d.phone ? { phone: d.phone } : {}),
         role: d.role,
         ...rel,
         ...(d.password ? { passwordHash: await hashPassword(d.password) } : {}),
@@ -599,5 +634,121 @@ export async function toggleVolunteerActiveAction(
     revalidatePath("/mi-equipo");
     revalidatePath("/usuarios");
     return ok(undefined, next ? "Voluntario reactivado." : "Voluntario desactivado.");
+  });
+}
+
+/* ------------------------------------------------ Líderes de campaña */
+export async function addCampaignLeaderAction(
+  campaignId: string,
+  _p: ActionState | undefined,
+  formData: FormData,
+): Promise<ActionState> {
+  return runAction(async () => {
+    await assertSameOrigin();
+    const { user } = await requireCapability("users.manage");
+    const campaign = await prisma.campaign.findUnique({
+      where: { id: campaignId },
+    });
+    if (!campaign) throw new RuleViolationError("La campaña no existe.");
+
+    const d = parseForm(campaignLeaderSchema, formData);
+    await assertContactAvailable({ email: d.email, phone: d.phone });
+
+    const created = await prisma.user.create({
+      data: {
+        name: `${d.firstName} ${d.lastName}`,
+        firstName: d.firstName,
+        lastName: d.lastName,
+        email: d.email ?? null,
+        phone: d.phone,
+        passwordHash: await hashPassword(d.password),
+        role: ROLES.LIDER_CAMPANA,
+        campaignId,
+        active: true,
+        approvalStatus: APPROVAL_STATUS.APPROVED,
+        createdVia: CREATED_VIA.ADMIN,
+        approvedById: user.id,
+      },
+    });
+    await writeAudit({
+      actorUserId: user.id,
+      action: "campaign.leader.add",
+      entity: "User",
+      entityId: created.id,
+      meta: { campaignId, email: created.email },
+    });
+    revalidatePath(`/campanas/${campaignId}`);
+    revalidatePath("/usuarios");
+    return ok(undefined, "Líder de campaña creado y asignado.");
+  });
+}
+
+export async function assignCampaignLeaderAction(
+  campaignId: string,
+  userId: string,
+): Promise<ActionState> {
+  return runAction(async () => {
+    await assertSameOrigin();
+    const { user } = await requireCapability("users.manage");
+    const [campaign, target] = await Promise.all([
+      prisma.campaign.findUnique({ where: { id: campaignId } }),
+      prisma.user.findUnique({ where: { id: userId } }),
+    ]);
+    if (!campaign) throw new RuleViolationError("La campaña no existe.");
+    if (!target) throw new RuleViolationError("El usuario no existe.");
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        role: ROLES.LIDER_CAMPANA,
+        campaignId,
+        centerId: null,
+        institutionId: null,
+        active: true,
+        approvalStatus: APPROVAL_STATUS.APPROVED,
+      },
+    });
+    await writeAudit({
+      actorUserId: user.id,
+      action: "campaign.leader.assign",
+      entity: "User",
+      entityId: userId,
+      meta: { campaignId },
+    });
+    revalidatePath(`/campanas/${campaignId}`);
+    revalidatePath("/usuarios");
+    return ok(undefined, "Líder asignado a la campaña.");
+  });
+}
+
+export async function removeCampaignLeaderAction(
+  userId: string,
+): Promise<ActionState> {
+  return runAction(async () => {
+    await assertSameOrigin();
+    const { user } = await requireCapability("users.manage");
+    const target = await prisma.user.findUnique({ where: { id: userId } });
+    if (!target || target.role !== ROLES.LIDER_CAMPANA) {
+      throw new RuleViolationError("Ese usuario no es líder de campaña.");
+    }
+    const campaignId = target.campaignId;
+    await prisma.user.update({
+      where: { id: userId },
+      data: { campaignId: null, active: false },
+    });
+    await prisma.session.deleteMany({ where: { userId } });
+    await writeAudit({
+      actorUserId: user.id,
+      action: "campaign.leader.remove",
+      entity: "User",
+      entityId: userId,
+      meta: { campaignId },
+    });
+    if (campaignId) revalidatePath(`/campanas/${campaignId}`);
+    revalidatePath("/usuarios");
+    return ok(
+      undefined,
+      "Líder retirado de la campaña. La cuenta quedó desactivada.",
+    );
   });
 }

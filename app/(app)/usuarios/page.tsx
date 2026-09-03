@@ -89,7 +89,7 @@ export default async function UsuariosPage() {
           <THead>
             <TR>
               <TH>Nombre</TH>
-              <TH>Correo</TH>
+              <TH>Contacto</TH>
               <TH>Rol</TH>
               <TH>Ámbito</TH>
               <TH>Estado</TH>
@@ -104,7 +104,8 @@ export default async function UsuariosPage() {
                 user={{
                   id: u.id,
                   name: u.name,
-                  email: u.email ?? "",
+                  email: u.email,
+                  phone: u.phone,
                   role: u.role,
                   roleLabel: ROLE_LABELS[u.role as Role] ?? u.role,
                   active: u.active,

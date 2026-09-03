@@ -185,15 +185,26 @@ export function CenterForm({
                     <Input id="managerLastName" name="managerLastName" required />
                   </Field>
                   <Field
-                    label="Correo del encargado"
-                    htmlFor="managerEmail"
+                    label="Teléfono del encargado"
+                    htmlFor="managerPhone"
                     required
+                    error={s && !s.ok ? s.fieldErrors?.managerPhone : undefined}
+                  >
+                    <Input
+                      id="managerPhone"
+                      name="managerPhone"
+                      type="tel"
+                      inputMode="tel"
+                      required
+                      placeholder="833 123 4567"
+                    />
+                  </Field>
+                  <Field
+                    label="Correo del encargado (opcional)"
+                    htmlFor="managerEmail"
                     error={s && !s.ok ? s.fieldErrors?.managerEmail : undefined}
                   >
-                    <Input id="managerEmail" name="managerEmail" type="email" required />
-                  </Field>
-                  <Field label="Teléfono (opcional)" htmlFor="managerPhone">
-                    <Input id="managerPhone" name="managerPhone" type="tel" />
+                    <Input id="managerEmail" name="managerEmail" type="email" />
                   </Field>
                   <Field
                     label="Contraseña temporal"
@@ -321,7 +332,8 @@ export function UserForm({
   defaults?: {
     id: string;
     name: string;
-    email: string;
+    email: string | null;
+    phone: string | null;
     role: string;
     centerId: string | null;
     institutionId: string | null;
@@ -350,17 +362,32 @@ export function UserForm({
             <Input id="name" name="name" required defaultValue={defaults?.name} />
           </Field>
           <Field
-            label="Correo"
+            label="Teléfono"
+            htmlFor="phone"
+            required={mode === "create"}
+            error={s && !s.ok ? s.fieldErrors?.phone : undefined}
+            hint="Es el identificador de acceso."
+          >
+            <Input
+              id="phone"
+              name="phone"
+              type="tel"
+              inputMode="tel"
+              required={mode === "create"}
+              defaultValue={defaults?.phone ?? ""}
+              placeholder="833 123 4567"
+            />
+          </Field>
+          <Field
+            label="Correo (opcional)"
             htmlFor="email"
-            required
             error={s && !s.ok ? s.fieldErrors?.email : undefined}
           >
             <Input
               id="email"
               name="email"
               type="email"
-              required
-              defaultValue={defaults?.email}
+              defaultValue={defaults?.email ?? ""}
             />
           </Field>
           <Field label="Rol" htmlFor="role" required>

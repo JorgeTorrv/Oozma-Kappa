@@ -1,6 +1,30 @@
 import { z } from "zod";
 import { idSchema, optionalText, quantitySchema, requiredText } from "./common";
 import { ROLE_LIST } from "@/lib/constants";
+import { normalizePhone } from "./auth";
+
+const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/** Teléfono obligatorio (identificador de acceso). Al menos 10 dígitos. */
+const requiredPhone = z
+  .string()
+  .trim()
+  .min(1, "El teléfono es obligatorio.")
+  .max(40)
+  .refine(
+    (v) => normalizePhone(v).length >= 10,
+    "El teléfono debe tener al menos 10 dígitos.",
+  );
+
+/** Correo opcional; si se escribe, debe ser válido. */
+const optionalEmail = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .max(160)
+  .optional()
+  .transform((v) => (v && v.length > 0 ? v : undefined))
+  .refine((v) => v === undefined || emailRe.test(v), "Correo no válido.");
 
 const dateString = z
   .string()
@@ -77,8 +101,14 @@ export const centerWithManagerSchema = centerSchema
       ctx.addIssue({ code: "custom", path: ["managerFirstName"], message: "Requerido." });
     if (!v.managerLastName)
       ctx.addIssue({ code: "custom", path: ["managerLastName"], message: "Requerido." });
-    if (!v.managerEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.managerEmail))
-      ctx.addIssue({ code: "custom", path: ["managerEmail"], message: "Correo válido requerido." });
+    if (!v.managerPhone || normalizePhone(v.managerPhone).length < 10)
+      ctx.addIssue({
+        code: "custom",
+        path: ["managerPhone"],
+        message: "Teléfono obligatorio (mínimo 10 dígitos).",
+      });
+    if (v.managerEmail && !emailRe.test(v.managerEmail))
+      ctx.addIssue({ code: "custom", path: ["managerEmail"], message: "Correo no válido." });
     if (!v.managerPassword || v.managerPassword.length < 8)
       ctx.addIssue({
         code: "custom",
@@ -102,7 +132,8 @@ export const institutionSchema = z.object({
 
 export const userSchema = z.object({
   name: requiredText("Nombre", 3, 120),
-  email: z.string().trim().toLowerCase().email("Correo no válido."),
+  phone: requiredPhone,
+  email: optionalEmail,
   role: z.enum(ROLE_LIST as [string, ...string[]]),
   password: z
     .string()
@@ -113,8 +144,10 @@ export const userSchema = z.object({
   campaignId: optionalText(40),
 });
 
+// Al editar: la contraseña y el teléfono no son obligatorios (cuentas antiguas
+// pueden no tener teléfono aún).
 export const userUpdateSchema = userSchema
-  .partial({ password: true })
+  .partial({ password: true, phone: true })
   .extend({ id: idSchema });
 
 export const goalSchema = z
@@ -131,3 +164,15 @@ export const goalSchema = z
   });
 
 export const toggleSchema = z.object({ id: idSchema });
+
+/** Alta de un líder de campaña desde la propia pantalla de la campaña. */
+export const campaignLeaderSchema = z.object({
+  firstName: requiredText("Nombre", 2, 80),
+  lastName: requiredText("Apellido", 2, 80),
+  phone: requiredPhone,
+  email: optionalEmail,
+  password: z
+    .string()
+    .min(8, "La contraseña debe tener al menos 8 caracteres.")
+    .max(100),
+});
