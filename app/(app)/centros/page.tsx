@@ -30,7 +30,7 @@ export default async function CentrosPage() {
       <PageHeader
         title="Centros de acopio"
         description="Alta y administración de los centros de recolección."
-        breadcrumbs={[{ label: "Inicio", href: "/" }, { label: "Centros" }]}
+        breadcrumbs={[{ label: "Inicio", href: "/inicio" }, { label: "Centros" }]}
       />
       <div className="space-y-6">
         <Card>

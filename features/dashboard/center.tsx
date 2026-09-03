@@ -4,6 +4,11 @@ import { StatCard, EmptyState } from "@/components/ui/page";
 import { Badge } from "@/components/ui/primitives";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { MovementBadge } from "@/components/movement-badge";
+import {
+  BarChartCard,
+  LineChartCard,
+  PieChartCard,
+} from "@/components/charts";
 import { formatQuantity, formatDateTime } from "@/lib/format";
 import { LOW_STOCK_THRESHOLD } from "@/lib/constants";
 import { AlertTriangle } from "lucide-react";
@@ -29,6 +34,39 @@ export async function CenterDashboard({ centerId }: { centerId: string }) {
         />
         <StatCard label="Transf. entrada" value={formatQuantity(t.transfersIn)} />
         <StatCard label="Transf. salida" value={formatQuantity(t.transfersOut)} />
+      </section>
+
+      <section className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <LineChartCard
+          title="Recepciones por día"
+          description="Últimos 14 días en tu centro."
+          data={d.charts.receptionsByDay.map((r) => ({
+            date: r.date.slice(5),
+            quantity: r.quantity,
+          }))}
+          xKey="date"
+          yKey="quantity"
+        />
+        <BarChartCard
+          title="Entradas vs. salidas"
+          description="Movimiento total de tu centro."
+          data={d.charts.flow}
+          xKey="tipo"
+          yKey="cantidad"
+        />
+        <BarChartCard
+          title="Artículos más recibidos"
+          data={d.charts.topArticles}
+          xKey="article"
+          yKey="quantity"
+          color="#059669"
+        />
+        <PieChartCard
+          title="Inventario por categoría"
+          data={d.charts.categoryDistribution}
+          nameKey="category"
+          valueKey="quantity"
+        />
       </section>
 
       {d.lowStock.length > 0 && (

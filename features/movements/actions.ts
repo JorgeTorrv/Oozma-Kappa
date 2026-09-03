@@ -67,7 +67,7 @@ export async function createReceptionAction(
 
     revalidatePath("/movimientos");
     revalidatePath("/inventario");
-    revalidatePath("/");
+    revalidatePath("/inicio");
     return ok(undefined, "Recepción registrada. El inventario se actualizó.");
   });
 }
@@ -99,7 +99,7 @@ export async function createDeliveryAction(
     revalidatePath("/movimientos");
     revalidatePath("/inventario");
     revalidatePath("/institucion");
-    revalidatePath("/");
+    revalidatePath("/inicio");
     return ok(undefined, "Entrega registrada. El inventario disminuyó.");
   });
 }
@@ -131,7 +131,7 @@ export async function createWasteAction(
     revalidatePath("/mermas");
     revalidatePath("/movimientos");
     revalidatePath("/inventario");
-    revalidatePath("/");
+    revalidatePath("/inicio");
     return ok(
       res,
       res.pending
@@ -171,7 +171,7 @@ export async function createTransferAction(
     revalidatePath("/movimientos");
     revalidatePath("/inventario");
     revalidatePath("/trazabilidad");
-    revalidatePath("/");
+    revalidatePath("/inicio");
     return ok(
       { transferId: transfer.id },
       "Transferencia completada. Origen disminuyó y destino aumentó.",
@@ -206,7 +206,7 @@ export async function createAdjustmentAction(
 
     revalidatePath("/movimientos");
     revalidatePath("/inventario");
-    revalidatePath("/");
+    revalidatePath("/inicio");
     return ok(undefined, "Ajuste aplicado. Queda registrado en el historial.");
   });
 }
@@ -231,7 +231,7 @@ export async function confirmDeliveryAction(
     });
     revalidatePath("/institucion");
     revalidatePath("/movimientos");
-    revalidatePath("/");
+    revalidatePath("/inicio");
     return ok(undefined, "Entrega confirmada como recibida.");
   });
 }
@@ -254,7 +254,7 @@ export async function approveWasteAction(
     revalidatePath("/mermas");
     revalidatePath("/movimientos");
     revalidatePath("/inventario");
-    revalidatePath("/");
+    revalidatePath("/inicio");
     return ok(undefined, "Merma aprobada. El inventario disminuyó.");
   });
 }
@@ -280,7 +280,7 @@ export async function rejectWasteAction(
     });
     revalidatePath("/mermas");
     revalidatePath("/movimientos");
-    revalidatePath("/");
+    revalidatePath("/inicio");
     return ok(undefined, "Merma rechazada. El inventario no se modificó.");
   });
 }

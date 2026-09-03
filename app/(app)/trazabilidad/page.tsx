@@ -70,7 +70,7 @@ export default async function TrazabilidadPage({
         title="Trazabilidad visual de los recursos"
         description="Sigue el recorrido de un artículo: donación → centro → transferencias → entrega a una institución."
         breadcrumbs={[
-          { label: "Inicio", href: "/" },
+          { label: "Inicio", href: "/inicio" },
           { label: "Trazabilidad" },
         ]}
       />

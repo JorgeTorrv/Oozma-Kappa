@@ -65,7 +65,7 @@ export default async function InventarioPage({
       <PageHeader
         title="Inventario"
         description="Existencias actuales calculadas desde los movimientos (centro + campaña + artículo)."
-        breadcrumbs={[{ label: "Inicio", href: "/" }, { label: "Inventario" }]}
+        breadcrumbs={[{ label: "Inicio", href: "/inicio" }, { label: "Inventario" }]}
         actions={
           can(p, "export.data") && (
             <Link

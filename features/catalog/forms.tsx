@@ -3,6 +3,7 @@
 import * as React from "react";
 import { ActionForm, SubmitButton } from "@/components/form";
 import { Field, Input, Select, Textarea } from "@/components/ui/primitives";
+import { LocationPicker } from "@/components/maps/location-picker";
 import {
   ROLE_LABELS,
   ROLE_LIST,
@@ -113,57 +114,94 @@ export function CenterForm({
     mode === "edit" && centerId
       ? updateCenterAction.bind(null, centerId)
       : createCenterAction;
+  const [addManager, setAddManager] = React.useState(false);
   return (
     <ActionForm
       action={action}
       successToast={mode === "edit" ? "Centro actualizado." : "Centro creado."}
       resetOnSuccess={mode === "create"}
-      className="grid gap-4 sm:grid-cols-2"
+      className="space-y-4"
     >
       {(s) => (
         <>
-          <Field label="Nombre" htmlFor="name" required error={s && !s.ok ? s.fieldErrors?.name : undefined}>
-            <Input id="name" name="name" required defaultValue={defaults?.name} />
-          </Field>
-          <Field label="Institución responsable (opcional)" htmlFor="institution">
-            <Input
-              id="institution"
-              name="institution"
-              defaultValue={defaults?.institution ?? ""}
-            />
-          </Field>
-          <div className="sm:col-span-2">
-            <Field label="Dirección (opcional)" htmlFor="address">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Nombre" htmlFor="name" required error={s && !s.ok ? s.fieldErrors?.name : undefined}>
+              <Input id="name" name="name" required defaultValue={defaults?.name} />
+            </Field>
+            <Field label="Institución responsable (opcional)" htmlFor="institution">
               <Input
-                id="address"
-                name="address"
-                defaultValue={defaults?.address ?? ""}
+                id="institution"
+                name="institution"
+                defaultValue={defaults?.institution ?? ""}
               />
             </Field>
           </div>
-          <Field label="Latitud (opcional)" htmlFor="latitude">
-            <Input
-              id="latitude"
-              name="latitude"
-              inputMode="decimal"
-              placeholder="22.2553"
-              defaultValue={defaults?.latitude ?? ""}
+
+          <div>
+            <p className="mb-1.5 text-sm font-medium text-slate-700">
+              Ubicación en el mapa
+            </p>
+            <LocationPicker
+              initial={{
+                lat: defaults?.latitude ?? null,
+                lng: defaults?.longitude ?? null,
+                address: defaults?.address ?? null,
+              }}
             />
-          </Field>
-          <Field label="Longitud (opcional)" htmlFor="longitude">
-            <Input
-              id="longitude"
-              name="longitude"
-              inputMode="decimal"
-              placeholder="-97.8686"
-              defaultValue={defaults?.longitude ?? ""}
-            />
-          </Field>
-          <div className="sm:col-span-2">
-            <SubmitButton>
-              {mode === "edit" ? "Guardar cambios" : "Crear centro"}
-            </SubmitButton>
           </div>
+
+          {mode === "create" && (
+            <fieldset className="rounded-md border border-slate-200 p-3">
+              <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                <input
+                  type="checkbox"
+                  className="size-4"
+                  checked={addManager}
+                  onChange={(e) => setAddManager(e.target.checked)}
+                />
+                Registrar también al primer encargado de este centro
+              </label>
+              {addManager && (
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  <Field label="Nombre del encargado" htmlFor="managerFirstName" required>
+                    <Input id="managerFirstName" name="managerFirstName" required />
+                  </Field>
+                  <Field label="Apellido del encargado" htmlFor="managerLastName" required>
+                    <Input id="managerLastName" name="managerLastName" required />
+                  </Field>
+                  <Field
+                    label="Correo del encargado"
+                    htmlFor="managerEmail"
+                    required
+                    error={s && !s.ok ? s.fieldErrors?.managerEmail : undefined}
+                  >
+                    <Input id="managerEmail" name="managerEmail" type="email" required />
+                  </Field>
+                  <Field label="Teléfono (opcional)" htmlFor="managerPhone">
+                    <Input id="managerPhone" name="managerPhone" type="tel" />
+                  </Field>
+                  <Field
+                    label="Contraseña temporal"
+                    htmlFor="managerPassword"
+                    required
+                    error={s && !s.ok ? s.fieldErrors?.managerPassword : undefined}
+                  >
+                    <Input
+                      id="managerPassword"
+                      name="managerPassword"
+                      type="password"
+                      autoComplete="new-password"
+                      required
+                    />
+                  </Field>
+                </div>
+              )}
+            </fieldset>
+          )}
+
+          <SubmitButton>
+            {mode === "edit" ? "Guardar cambios" : "Crear centro"}
+          </SubmitButton>
         </>
       )}
     </ActionForm>

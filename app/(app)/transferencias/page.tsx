@@ -16,7 +16,7 @@ export default async function TransferenciasPage() {
         title="Transferencia entre centros"
         description="Mueve inventario de un centro a otro dentro de la misma campaña. La operación es atómica."
         breadcrumbs={[
-          { label: "Inicio", href: "/" },
+          { label: "Inicio", href: "/inicio" },
           { label: "Transferencias" },
         ]}
       />

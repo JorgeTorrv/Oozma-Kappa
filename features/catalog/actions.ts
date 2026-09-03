@@ -2,22 +2,30 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
-import { requireCapability, assertSameOrigin } from "@/lib/auth/dal";
+import {
+  requireCapability,
+  requireUserOrThrow,
+  toPrincipal,
+  assertSameOrigin,
+} from "@/lib/auth/dal";
 import { parseForm } from "@/lib/validate";
 import { ok, runAction, type ActionState } from "@/lib/result";
-import { AppError, RuleViolationError } from "@/lib/errors";
+import { AppError, ForbiddenError, RuleViolationError } from "@/lib/errors";
 import { writeAudit } from "@/lib/audit";
 import { hashPassword } from "@/lib/auth/password";
 import {
   articleSchema,
   campaignSchema,
   centerSchema,
+  centerWithManagerSchema,
   goalSchema,
   institutionSchema,
   userSchema,
   userUpdateSchema,
 } from "@/validators/entities";
-import { ROLES } from "@/lib/constants";
+import { APPROVAL_STATUS, CREATED_VIA, ROLES } from "@/lib/constants";
+import { notify } from "@/services/notification.service";
+import { assertManageVolunteer, can } from "@/lib/permissions";
 
 /* ------------------------------------------------------------- Campañas */
 export async function createCampaignAction(
@@ -137,25 +145,71 @@ export async function createCenterAction(
   return runAction(async () => {
     await assertSameOrigin();
     const { user } = await requireCapability("center.create");
-    const d = parseForm(centerSchema, formData);
-    const center = await prisma.center.create({
-      data: {
-        name: d.name,
-        institution: d.institution ?? null,
-        address: d.address ?? null,
-        latitude: d.latitude ?? null,
-        longitude: d.longitude ?? null,
-      },
+    const d = parseForm(centerWithManagerSchema, formData);
+
+    const wantsManager = Boolean(d.managerEmail && d.managerPassword);
+    if (wantsManager) {
+      const existing = await prisma.user.findUnique({
+        where: { email: d.managerEmail },
+      });
+      if (existing) {
+        throw new AppError(
+          "CONFLICT",
+          "Ya existe un usuario con ese correo.",
+          { managerEmail: ["Ya existe un usuario con ese correo."] },
+        );
+      }
+    }
+    const managerHash = wantsManager
+      ? await hashPassword(d.managerPassword as string)
+      : null;
+
+    const center = await prisma.$transaction(async (tx) => {
+      const c = await tx.center.create({
+        data: {
+          name: d.name,
+          institution: d.institution ?? null,
+          address: d.address ?? null,
+          latitude: d.latitude ?? null,
+          longitude: d.longitude ?? null,
+        },
+      });
+      if (wantsManager) {
+        await tx.user.create({
+          data: {
+            name: `${d.managerFirstName} ${d.managerLastName}`,
+            firstName: d.managerFirstName,
+            lastName: d.managerLastName,
+            email: d.managerEmail,
+            phone: d.managerPhone ?? null,
+            passwordHash: managerHash as string,
+            role: ROLES.ENCARGADO_CENTRO,
+            centerId: c.id,
+            active: true,
+            approvalStatus: APPROVAL_STATUS.APPROVED,
+            createdVia: CREATED_VIA.ADMIN,
+            approvedById: user.id,
+          },
+        });
+      }
+      return c;
     });
+
     await writeAudit({
       actorUserId: user.id,
       action: "center.create",
       entity: "Center",
       entityId: center.id,
-      meta: { name: center.name },
+      meta: { name: center.name, withManager: wantsManager },
     });
     revalidatePath("/centros");
-    return ok({ id: center.id }, "Centro creado.");
+    revalidatePath("/usuarios");
+    return ok(
+      { id: center.id },
+      wantsManager
+        ? "Centro creado y encargado registrado."
+        : "Centro creado.",
+    );
   });
 }
 
@@ -428,5 +482,120 @@ export async function deleteGoalAction(id: string): Promise<ActionState> {
     await prisma.campaignGoal.delete({ where: { id } });
     revalidatePath(`/campanas/${goal.campaignId}`);
     return ok(undefined, "Meta eliminada.");
+  });
+}
+
+/* --------------------------------------------------- Equipo de voluntarios */
+async function requireVolunteerManager() {
+  await assertSameOrigin();
+  const actor = await requireUserOrThrow();
+  const principal = toPrincipal(actor);
+  if (!can(principal, "team.manage") && !can(principal, "users.manage")) {
+    throw new ForbiddenError();
+  }
+  return { actor, principal };
+}
+
+export async function approveVolunteerAction(
+  userId: string,
+): Promise<ActionState> {
+  return runAction(async () => {
+    const { actor, principal } = await requireVolunteerManager();
+    const volunteer = await prisma.user.findUnique({ where: { id: userId } });
+    if (!volunteer) throw new RuleViolationError("La cuenta no existe.");
+    assertManageVolunteer(principal, volunteer);
+    if (volunteer.approvalStatus === APPROVAL_STATUS.APPROVED && volunteer.active) {
+      return ok(undefined, "La cuenta ya estaba activa.");
+    }
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        approvalStatus: APPROVAL_STATUS.APPROVED,
+        active: true,
+        approvedById: actor.id,
+      },
+    });
+    await writeAudit({
+      actorUserId: actor.id,
+      action: "volunteer.approve",
+      entity: "User",
+      entityId: userId,
+    });
+    await notify({
+      type: "VOLUNTEER_APPROVED",
+      title: "Tu cuenta de voluntario fue aprobada",
+      body: "Ya puedes iniciar sesión y registrar movimientos.",
+      userId,
+      link: "/inicio",
+    }).catch(() => undefined);
+
+    revalidatePath("/mi-equipo");
+    revalidatePath("/usuarios");
+    return ok(undefined, "Voluntario aprobado.");
+  });
+}
+
+export async function rejectVolunteerAction(
+  userId: string,
+): Promise<ActionState> {
+  return runAction(async () => {
+    const { actor, principal } = await requireVolunteerManager();
+    const volunteer = await prisma.user.findUnique({ where: { id: userId } });
+    if (!volunteer) throw new RuleViolationError("La cuenta no existe.");
+    assertManageVolunteer(principal, volunteer);
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        approvalStatus: APPROVAL_STATUS.REJECTED,
+        active: false,
+        approvedById: actor.id,
+      },
+    });
+    await prisma.session.deleteMany({ where: { userId } });
+    await writeAudit({
+      actorUserId: actor.id,
+      action: "volunteer.reject",
+      entity: "User",
+      entityId: userId,
+    });
+    await notify({
+      type: "VOLUNTEER_REJECTED",
+      title: "Tu solicitud de voluntariado fue rechazada",
+      body: "Contacta al encargado del centro si crees que es un error.",
+      userId,
+    }).catch(() => undefined);
+
+    revalidatePath("/mi-equipo");
+    revalidatePath("/usuarios");
+    return ok(undefined, "Solicitud rechazada.");
+  });
+}
+
+export async function toggleVolunteerActiveAction(
+  userId: string,
+): Promise<ActionState> {
+  return runAction(async () => {
+    const { actor, principal } = await requireVolunteerManager();
+    const volunteer = await prisma.user.findUnique({ where: { id: userId } });
+    if (!volunteer) throw new RuleViolationError("La cuenta no existe.");
+    assertManageVolunteer(principal, volunteer);
+
+    const next = !volunteer.active;
+    await prisma.user.update({
+      where: { id: userId },
+      data: { active: next },
+    });
+    if (!next) await prisma.session.deleteMany({ where: { userId } });
+    await writeAudit({
+      actorUserId: actor.id,
+      action: next ? "volunteer.activate" : "volunteer.deactivate",
+      entity: "User",
+      entityId: userId,
+    });
+    revalidatePath("/mi-equipo");
+    revalidatePath("/usuarios");
+    return ok(undefined, next ? "Voluntario reactivado." : "Voluntario desactivado.");
   });
 }

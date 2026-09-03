@@ -15,7 +15,7 @@ export default async function AjustesPage() {
       <PageHeader
         title="Ajuste de inventario"
         description="Corrige el stock del sistema para que coincida con el conteo físico. Genera un movimiento de ajuste con motivo."
-        breadcrumbs={[{ label: "Inicio", href: "/" }, { label: "Ajustes" }]}
+        breadcrumbs={[{ label: "Inicio", href: "/inicio" }, { label: "Ajustes" }]}
       />
       {catalogs.campaigns.length === 0 ? (
         <EmptyState title="No hay campañas activas para tu centro." />

@@ -20,7 +20,7 @@ export default async function CenterEditPage({
       <PageHeader
         title={`Editar: ${center.name}`}
         breadcrumbs={[
-          { label: "Inicio", href: "/" },
+          { label: "Inicio", href: "/inicio" },
           { label: "Centros", href: "/centros" },
           { label: center.name },
         ]}

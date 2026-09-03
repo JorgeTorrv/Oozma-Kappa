@@ -21,6 +21,7 @@ export type IconKey =
   | "article"
   | "institution"
   | "users"
+  | "team"
   | "bell"
   | "inbox";
 
@@ -37,7 +38,7 @@ type Rule = {
 const GROUPS: { title?: string; rules: Rule[] }[] = [
   {
     rules: [
-      { label: "Panel", href: "/", icon: "dashboard", caps: [] },
+      { label: "Panel", href: "/inicio", icon: "dashboard", caps: [] },
       {
         label: "Entregas recibidas",
         href: "/institucion",
@@ -144,6 +145,12 @@ const GROUPS: { title?: string; rules: Rule[] }[] = [
         href: "/instituciones",
         icon: "institution",
         caps: ["institution.manage"],
+      },
+      {
+        label: "Mi equipo",
+        href: "/mi-equipo",
+        icon: "team",
+        caps: ["team.manage"],
       },
       {
         label: "Usuarios",

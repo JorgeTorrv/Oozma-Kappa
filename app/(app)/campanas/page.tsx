@@ -39,7 +39,7 @@ export default async function CampanasPage() {
       <PageHeader
         title="Campañas"
         description="Campañas de acopio y los centros que participan en cada una."
-        breadcrumbs={[{ label: "Inicio", href: "/" }, { label: "Campañas" }]}
+        breadcrumbs={[{ label: "Inicio", href: "/inicio" }, { label: "Campañas" }]}
       />
 
       <div className="space-y-6">

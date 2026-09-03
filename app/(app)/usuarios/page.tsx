@@ -10,14 +10,16 @@ import {
 import { Table, TBody, TH, THead, TR } from "@/components/ui/table";
 import { UserForm } from "@/features/catalog/forms";
 import { UserRow } from "@/features/catalog/user-row";
-import { ROLE_LABELS, type Role } from "@/lib/constants";
+import { VolunteerPanel } from "@/features/team/panel";
+import { APPROVAL_STATUS, ROLE_LABELS, type Role } from "@/lib/constants";
 
 export const metadata = { title: "Usuarios · Acopio Hub" };
 
 export default async function UsuariosPage() {
   const { user } = await requireCapabilityPage("users.manage");
 
-  const [users, centers, institutions, campaigns] = await Promise.all([
+  const [users, centers, institutions, campaigns, pendingCount] =
+    await Promise.all([
     prisma.user.findMany({
       include: {
         center: { select: { name: true } },
@@ -40,6 +42,12 @@ export default async function UsuariosPage() {
       select: { id: true, name: true },
       orderBy: { name: "asc" },
     }),
+    prisma.user.count({
+      where: {
+        role: "VOLUNTARIO_CENTRO",
+        approvalStatus: APPROVAL_STATUS.PENDING,
+      },
+    }),
   ]);
 
   return (
@@ -47,10 +55,23 @@ export default async function UsuariosPage() {
       <PageHeader
         title="Usuarios"
         description="Cuentas del sistema y sus roles. Nunca se muestran contraseñas."
-        breadcrumbs={[{ label: "Inicio", href: "/" }, { label: "Usuarios" }]}
+        breadcrumbs={[{ label: "Inicio", href: "/inicio" }, { label: "Usuarios" }]}
       />
 
       <div className="space-y-6">
+        {pendingCount > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                Solicitudes de voluntariado ({pendingCount})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <VolunteerPanel showActive={false} />
+            </CardContent>
+          </Card>
+        )}
+
         <Card>
           <CardHeader>
             <CardTitle>Nuevo usuario</CardTitle>
@@ -83,7 +104,7 @@ export default async function UsuariosPage() {
                 user={{
                   id: u.id,
                   name: u.name,
-                  email: u.email,
+                  email: u.email ?? "",
                   role: u.role,
                   roleLabel: ROLE_LABELS[u.role as Role] ?? u.role,
                   active: u.active,

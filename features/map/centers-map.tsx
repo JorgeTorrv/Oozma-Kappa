@@ -1,102 +1,45 @@
 "use client";
 
 import * as React from "react";
-import "leaflet/dist/leaflet.css";
+import { Warehouse } from "lucide-react";
 import type { MapCenter } from "./data";
 import { formatQuantity } from "@/lib/format";
-import { Warehouse } from "lucide-react";
+import {
+  LeafletMarkersMap,
+  type MapMarker,
+} from "@/components/maps/leaflet-markers-map";
 
-/**
- * Mapa de centros con Leaflet + OpenStreetMap (sin mapas de pago). Si el mapa no
- * puede cargar (sin Internet para los mosaicos, o error de la librería), se
- * muestra automáticamente la lista de centros.
- */
+function toMarkers(centers: MapCenter[]): MapMarker[] {
+  return centers
+    .filter((c) => c.latitude != null && c.longitude != null)
+    .map((c) => {
+      const top = c.topArticles
+        .map((a) => `<li>${a.name}: ${formatQuantity(a.quantity)}</li>`)
+        .join("");
+      return {
+        id: c.id,
+        lat: c.latitude as number,
+        lng: c.longitude as number,
+        label: c.name,
+        popupHtml:
+          `<strong>${c.name}</strong><br/>` +
+          `<span style="color:#64748b">${c.campaigns.join(", ") || "Sin campañas"}</span><br/>` +
+          `Inventario: <strong>${formatQuantity(c.totalStock)}</strong> unidades` +
+          (top ? `<ul style="margin:4px 0 0;padding-left:16px">${top}</ul>` : ""),
+      };
+    });
+}
+
+/** `/mapa`: mapa + lista; si el mapa no carga, sólo lista con aviso. */
 export function CentersMap({ centers }: { centers: MapCenter[] }) {
-  const ref = React.useRef<HTMLDivElement>(null);
-  const [failed, setFailed] = React.useState(false);
-  const withCoords = centers.filter(
-    (c) => c.latitude != null && c.longitude != null,
-  );
+  const markers = React.useMemo(() => toMarkers(centers), [centers]);
+  const [failed, setFailed] = React.useState(markers.length === 0);
 
-  React.useEffect(() => {
-    let cancelled = false;
-    let map: import("leaflet").Map | null = null;
-
-    async function init() {
-      if (!ref.current || withCoords.length === 0) {
-        setFailed(true);
-        return;
-      }
-      try {
-        const L = (await import("leaflet")).default;
-        if (cancelled || !ref.current) return;
-
-        map = L.map(ref.current, { scrollWheelZoom: false });
-        const layer = L.tileLayer(
-          "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-          {
-            attribution: "&copy; OpenStreetMap",
-            maxZoom: 18,
-          },
-        );
-        let tileErrors = 0;
-        layer.on("tileerror", () => {
-          tileErrors += 1;
-          if (tileErrors > 3 && !cancelled) setFailed(true);
-        });
-        layer.addTo(map);
-
-        const bounds: [number, number][] = [];
-        for (const c of withCoords) {
-          const lat = c.latitude as number;
-          const lng = c.longitude as number;
-          bounds.push([lat, lng]);
-          const icon = L.divIcon({
-            className: "",
-            html: `<span style="display:flex;width:26px;height:26px;align-items:center;justify-content:center;border-radius:9999px;background:#1d4ed8;color:#fff;font-size:12px;font-weight:700;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.3)">${c.name.replace(/[^A-Za-z]/g, "").slice(0, 1) || "C"}</span>`,
-            iconSize: [26, 26],
-            iconAnchor: [13, 13],
-          });
-          const top = c.topArticles
-            .map(
-              (a) =>
-                `<li>${a.name}: ${formatQuantity(a.quantity)}</li>`,
-            )
-            .join("");
-          L.marker([lat, lng], { icon })
-            .addTo(map!)
-            .bindPopup(
-              `<strong>${c.name}</strong><br/>` +
-                `<span style="color:#64748b">${c.campaigns.join(", ") || "Sin campañas"}</span><br/>` +
-                `Inventario: <strong>${formatQuantity(c.totalStock)}</strong> unidades` +
-                (top ? `<ul style="margin:4px 0 0;padding-left:16px">${top}</ul>` : ""),
-            );
-        }
-        map.fitBounds(bounds, { padding: [40, 40], maxZoom: 13 });
-      } catch {
-        if (!cancelled) setFailed(true);
-      }
-    }
-
-    init();
-    return () => {
-      cancelled = true;
-      map?.remove();
-    };
-  }, [withCoords]);
-
-  if (failed || withCoords.length === 0) {
-    return <CentersList centers={centers} note />;
-  }
+  if (failed) return <CentersList centers={centers} note />;
 
   return (
     <div className="space-y-4">
-      <div
-        ref={ref}
-        className="h-[420px] w-full overflow-hidden rounded-lg border border-slate-200 bg-slate-100"
-        role="img"
-        aria-label="Mapa de centros de acopio"
-      />
+      <LeafletMarkersMap markers={markers} onFail={() => setFailed(true)} />
       <CentersList centers={centers} />
     </div>
   );

@@ -23,13 +23,19 @@ export default defineConfig({
   ],
   webServer: {
     command:
-      "npx prisma db push --skip-generate && npx prisma db seed && npx next dev --port " +
+      "npx prisma db push --skip-generate --accept-data-loss && npx prisma db seed && npx next dev --port " +
       PORT,
     url: `http://localhost:${PORT}/login`,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
     env: {
-      DATABASE_URL: "file:./e2e.db",
+      // Base Postgres aislada para E2E (ver README / docs/deploy.md).
+      DATABASE_URL:
+        process.env.E2E_DATABASE_URL ??
+        "postgresql://postgres@localhost:5432/acopio_e2e",
+      DIRECT_URL:
+        process.env.E2E_DATABASE_URL ??
+        "postgresql://postgres@localhost:5432/acopio_e2e",
       NODE_ENV: "development",
     },
   },

@@ -23,6 +23,7 @@ import {
   Warehouse,
   PackageSearch,
   Users,
+  UsersRound,
   ClipboardCheck,
   type LucideIcon,
 } from "lucide-react";
@@ -47,6 +48,7 @@ const ICONS: Record<IconKey, LucideIcon> = {
   article: PackageSearch,
   institution: Building2,
   users: Users,
+  team: UsersRound,
   bell: Bell,
   inbox: ClipboardCheck,
 };
@@ -75,7 +77,7 @@ export function AppShell({
 
       {/* Topbar móvil */}
       <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 lg:hidden">
-        <Link href="/" className="flex items-center gap-2 font-semibold">
+        <Link href="/inicio" className="flex items-center gap-2 font-semibold">
           <span className="flex size-8 items-center justify-center rounded-lg bg-brand-700 text-white">
             <Boxes className="size-4" />
           </span>
@@ -190,7 +192,7 @@ function SidebarContent({
             <ul className="space-y-0.5">
               {group.items.map((item) => {
                 const active =
-                  item.href === "/"
+                  item.href === "/inicio"
                     ? pathname === "/"
                     : pathname.startsWith(item.href);
                 const Icon = ICONS[item.icon];

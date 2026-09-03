@@ -4,6 +4,7 @@ import {
   can,
   canActOnCenter,
   assertActOnCenter,
+  canManageVolunteer,
   ROLE_CAPABILITIES,
 } from "../lib/permissions";
 import { ROLES } from "../lib/constants";
@@ -77,6 +78,30 @@ describe("Matriz de permisos", () => {
     for (const [, caps] of Object.entries(ROLE_CAPABILITIES)) {
       for (const c of caps) expect(typeof c).toBe("string");
     }
+  });
+
+  it("gestión de voluntarios: encargado sólo su centro; coordinador cualquiera", () => {
+    const encA = principal(ROLES.ENCARGADO_CENTRO, { centerId: fx.centerA.id });
+    const coord = principal(ROLES.COORDINADOR_GENERAL);
+    const volInA = { role: ROLES.VOLUNTARIO_CENTRO, centerId: fx.centerA.id };
+    const volInB = { role: ROLES.VOLUNTARIO_CENTRO, centerId: fx.centerB.id };
+
+    expect(can(encA, "team.manage")).toBe(true);
+    expect(canManageVolunteer(encA, volInA)).toBe(true);
+    expect(canManageVolunteer(encA, volInB)).toBe(false);
+    expect(canManageVolunteer(coord, volInB)).toBe(true);
+
+    // Un encargado no puede "gestionar" a otro encargado como si fuera voluntario.
+    expect(
+      canManageVolunteer(encA, {
+        role: ROLES.ENCARGADO_CENTRO,
+        centerId: fx.centerA.id,
+      }),
+    ).toBe(false);
+    // El voluntario no gestiona a nadie.
+    const volA = principal(ROLES.VOLUNTARIO_CENTRO, { centerId: fx.centerA.id });
+    expect(canManageVolunteer(volA, volInA)).toBe(false);
+    expect(can(volA, "team.manage")).toBe(false);
   });
 });
 

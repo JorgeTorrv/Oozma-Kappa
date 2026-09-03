@@ -49,7 +49,7 @@ export default async function MovimientosPage({
       <PageHeader
         title="Historial de movimientos"
         description={`${total} movimiento(s). La trazabilidad es permanente: los movimientos no se editan ni se borran.`}
-        breadcrumbs={[{ label: "Inicio", href: "/" }, { label: "Movimientos" }]}
+        breadcrumbs={[{ label: "Inicio", href: "/inicio" }, { label: "Movimientos" }]}
         actions={
           can(toPrincipal(user), "export.data") && (
             <Link

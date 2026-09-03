@@ -65,7 +65,7 @@ export default async function CampaignDetailPage({
         title={campaign.name}
         description={campaign.description ?? undefined}
         breadcrumbs={[
-          { label: "Inicio", href: "/" },
+          { label: "Inicio", href: "/inicio" },
           { label: "Campañas", href: "/campanas" },
           { label: campaign.name },
         ]}

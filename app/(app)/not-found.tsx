@@ -14,7 +14,7 @@ export default function NotFound() {
         El recurso no existe o no tienes acceso a él.
       </p>
       <Link
-        href="/"
+        href="/inicio"
         className="mt-5 inline-flex h-9 items-center rounded-md border border-slate-300 px-4 text-sm hover:bg-slate-50"
       >
         Volver al inicio

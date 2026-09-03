@@ -4,24 +4,31 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/db";
 import { parseForm } from "@/lib/validate";
-import { loginSchema } from "@/validators/auth";
-import { verifyPassword } from "@/lib/auth/password";
+import {
+  loginSchema,
+  parseIdentifier,
+  volunteerRegisterSchema,
+  normalizePhone,
+} from "@/validators/auth";
+import { verifyPassword, hashPassword } from "@/lib/auth/password";
 import { createSession, destroySession } from "@/lib/auth/session";
 import { checkLoginRateLimit, resetLoginRateLimit } from "@/lib/rate-limit";
 import { fail, ok, runAction, type ActionState } from "@/lib/result";
 import { AppError } from "@/lib/errors";
+import { APPROVAL_STATUS, CREATED_VIA, ROLES } from "@/lib/constants";
+import { notify } from "@/services/notification.service";
+import { assertSameOrigin } from "@/lib/auth/dal";
 
 export async function loginAction(
   _prev: ActionState | undefined,
   formData: FormData,
 ): Promise<ActionState> {
   const result = await runAction(async () => {
-    const { email, password } = parseForm(loginSchema, formData);
+    const { identifier, password } = parseForm(loginSchema, formData);
 
     const h = await headers();
-    const ip =
-      h.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
-    const rl = checkLoginRateLimit(`${ip}:${email}`);
+    const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
+    const rl = checkLoginRateLimit(`${ip}:${identifier}`);
     if (!rl.allowed) {
       throw new AppError(
         "RATE_LIMITED",
@@ -29,24 +36,134 @@ export async function loginAction(
       );
     }
 
-    const user = await prisma.user.findUnique({ where: { email } });
-    // Mensaje genérico: no revela si el correo existe.
-    const invalid = fail("Correo o contraseña incorrectos.");
-    if (!user || !user.active) return invalid;
+    const id = parseIdentifier(identifier);
 
-    const valid = await verifyPassword(password, user.passwordHash);
+    let matched = null;
+    if (id.kind === "email") {
+      matched = await prisma.user.findUnique({ where: { email: id.value } });
+    } else {
+      // El teléfono se guarda con el formato que escribió el usuario; se
+      // compara normalizado (sólo dígitos).
+      const candidates = await prisma.user.findMany({
+        where: { phone: { not: null } },
+        select: { id: true, phone: true },
+      });
+      const hit = candidates.find(
+        (c) => c.phone && normalizePhone(c.phone) === id.value,
+      );
+      if (hit) {
+        matched = await prisma.user.findUnique({ where: { id: hit.id } });
+      }
+    }
+
+    const invalid = fail("Correo/teléfono o contraseña incorrectos.");
+    if (!matched) return invalid;
+
+    const valid = await verifyPassword(password, matched.passwordHash);
     if (!valid) return invalid;
 
-    resetLoginRateLimit(`${ip}:${email}`);
-    await createSession(user.id);
+    if (matched.approvalStatus === APPROVAL_STATUS.PENDING) {
+      return fail(
+        "Tu cuenta está pendiente de aprobación por el encargado del centro.",
+      );
+    }
+    if (matched.approvalStatus === APPROVAL_STATUS.REJECTED) {
+      return fail("Tu solicitud de voluntariado fue rechazada.");
+    }
+    if (!matched.active) {
+      return fail("Tu cuenta está desactivada. Contacta al encargado.");
+    }
+
+    resetLoginRateLimit(`${ip}:${identifier}`);
+    await createSession(matched.id);
     return ok(undefined, "Sesión iniciada.");
   });
 
-  if (result.ok) redirect("/");
+  if (result.ok) redirect("/inicio");
   return result;
 }
 
 export async function logoutAction(): Promise<never> {
   await destroySession();
   redirect("/login");
+}
+
+/**
+ * Auto-registro público como voluntario. La cuenta nace INACTIVA y
+ * PENDING: un encargado (o el coordinador) de ese centro debe aprobarla.
+ */
+export async function registerVolunteerAction(
+  _prev: ActionState | undefined,
+  formData: FormData,
+): Promise<ActionState> {
+  const result = await runAction(async () => {
+    await assertSameOrigin();
+    const d = parseForm(volunteerRegisterSchema, formData);
+
+    const center = await prisma.center.findUnique({
+      where: { id: d.centerId },
+    });
+    if (!center || !center.active) {
+      return fail("El centro seleccionado no está disponible.");
+    }
+
+    const phoneNorm = d.phone ? normalizePhone(d.phone) : null;
+
+    // Unicidad de correo / teléfono.
+    if (d.email) {
+      const exists = await prisma.user.findUnique({ where: { email: d.email } });
+      if (exists) {
+        throw new AppError("CONFLICT", "Ese correo ya está registrado.", {
+          email: ["Ese correo ya está registrado."],
+        });
+      }
+    }
+    if (phoneNorm) {
+      const all = await prisma.user.findMany({
+        where: { phone: { not: null } },
+        select: { phone: true },
+      });
+      if (all.some((u) => u.phone && normalizePhone(u.phone) === phoneNorm)) {
+        throw new AppError("CONFLICT", "Ese teléfono ya está registrado.", {
+          phone: ["Ese teléfono ya está registrado."],
+        });
+      }
+    }
+
+    const user = await prisma.user.create({
+      data: {
+        name: `${d.firstName} ${d.lastName}`,
+        firstName: d.firstName,
+        lastName: d.lastName,
+        email: d.email ?? null,
+        phone: d.phone ?? null,
+        passwordHash: await hashPassword(d.password),
+        role: ROLES.VOLUNTARIO_CENTRO,
+        centerId: d.centerId,
+        active: false,
+        approvalStatus: APPROVAL_STATUS.PENDING,
+        createdVia: CREATED_VIA.SELF_REGISTRATION,
+      },
+    });
+
+    await notify({
+      type: "VOLUNTEER_REQUEST",
+      title: "Nueva solicitud de voluntariado",
+      body: `${user.name} quiere unirse a ${center.name}.`,
+      centerId: center.id,
+      link: "/mi-equipo",
+    }).catch(() => undefined);
+    await notify({
+      type: "VOLUNTEER_REQUEST",
+      title: "Nueva solicitud de voluntariado",
+      body: `${user.name} solicitó unirse a ${center.name}.`,
+      role: ROLES.COORDINADOR_GENERAL,
+      link: "/usuarios",
+    }).catch(() => undefined);
+
+    return ok(undefined, "registered");
+  });
+
+  if (result.ok) redirect("/login?registrado=1");
+  return result;
 }

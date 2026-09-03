@@ -15,7 +15,7 @@ export default async function EntregasPage() {
       <PageHeader
         title="Registrar entrega"
         description="Canalización de artículos desde el centro hacia una institución receptora."
-        breadcrumbs={[{ label: "Inicio", href: "/" }, { label: "Entregas" }]}
+        breadcrumbs={[{ label: "Inicio", href: "/inicio" }, { label: "Entregas" }]}
       />
       {catalogs.campaigns.length === 0 || catalogs.institutions.length === 0 ? (
         <EmptyState

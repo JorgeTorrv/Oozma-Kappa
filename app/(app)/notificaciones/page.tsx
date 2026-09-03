@@ -25,7 +25,7 @@ export default async function NotificacionesPage() {
         title="Centro de notificaciones"
         description="Avisos internos: recepciones, mermas, transferencias, entregas y metas."
         breadcrumbs={[
-          { label: "Inicio", href: "/" },
+          { label: "Inicio", href: "/inicio" },
           { label: "Notificaciones" },
         ]}
         actions={

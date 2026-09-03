@@ -15,7 +15,7 @@ export async function markAllReadAction(): Promise<ActionState> {
       centerId: user.centerId,
     });
     revalidatePath("/notificaciones");
-    revalidatePath("/");
+    revalidatePath("/inicio");
     return ok(undefined, "Notificaciones marcadas como leídas.");
   });
 }

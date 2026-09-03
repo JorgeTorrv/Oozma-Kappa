@@ -28,7 +28,7 @@ export default async function InstitucionesPage() {
         title="Instituciones receptoras"
         description="Organizaciones a las que se canalizan los artículos acopiados."
         breadcrumbs={[
-          { label: "Inicio", href: "/" },
+          { label: "Inicio", href: "/inicio" },
           { label: "Instituciones" },
         ]}
       />

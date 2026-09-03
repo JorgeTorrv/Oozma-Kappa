@@ -1,6 +1,8 @@
 "use client";
 
 import { useActionState } from "react";
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { loginAction } from "./actions";
 import { Field, Input } from "@/components/ui/primitives";
 import { SubmitButton } from "@/components/form";
@@ -11,20 +13,35 @@ export function LoginForm() {
     loginAction,
     undefined,
   );
-  const fieldErrors =
-    state && !state.ok ? (state.fieldErrors ?? {}) : {};
+  const params = useSearchParams();
+  const justRegistered = params.get("registrado") === "1";
+  const fieldErrors = state && !state.ok ? (state.fieldErrors ?? {}) : {};
 
   return (
     <form action={action} className="flex flex-col gap-4" noValidate>
-      <Field label="Correo" htmlFor="email" error={fieldErrors.email} required>
+      {justRegistered && (
+        <p
+          role="status"
+          className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800"
+        >
+          Registro recibido. Tu cuenta quedará activa cuando el encargado del
+          centro la apruebe.
+        </p>
+      )}
+
+      <Field
+        label="Correo o teléfono"
+        htmlFor="identifier"
+        error={fieldErrors.identifier}
+        required
+      >
         <Input
-          id="email"
-          name="email"
-          type="email"
+          id="identifier"
+          name="identifier"
           autoComplete="username"
           autoFocus
-          placeholder="tucorreo@acopio.local"
-          aria-describedby="email-error"
+          placeholder="correo@acopio.local  ·  833 123 4567"
+          aria-describedby="identifier-error"
         />
       </Field>
 
@@ -52,6 +69,13 @@ export function LoginForm() {
       <SubmitButton className="w-full" pendingText="Entrando…">
         Iniciar sesión
       </SubmitButton>
+
+      <p className="text-center text-sm text-slate-500">
+        ¿Quieres ser voluntario?{" "}
+        <Link href="/registro" className="font-medium text-brand-700 hover:underline">
+          Regístrate aquí
+        </Link>
+      </p>
     </form>
   );
 }

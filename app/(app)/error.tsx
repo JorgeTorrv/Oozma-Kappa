@@ -32,7 +32,7 @@ export default function AppError({
       <div className="mt-5 flex gap-2">
         <Button onClick={reset}>Reintentar</Button>
         <Link
-          href="/"
+          href="/inicio"
           className="inline-flex h-9 items-center rounded-md border border-slate-300 px-4 text-sm hover:bg-slate-50"
         >
           Ir al inicio

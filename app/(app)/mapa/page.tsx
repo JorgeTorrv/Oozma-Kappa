@@ -14,7 +14,7 @@ export default async function MapaPage() {
       <PageHeader
         title="Mapa de centros"
         description="Ubicación de los centros de acopio y su inventario resumido (OpenStreetMap, sin servicios de pago)."
-        breadcrumbs={[{ label: "Inicio", href: "/" }, { label: "Mapa" }]}
+        breadcrumbs={[{ label: "Inicio", href: "/inicio" }, { label: "Mapa" }]}
       />
       {centers.length === 0 ? (
         <EmptyState title="No hay centros activos para mostrar." />

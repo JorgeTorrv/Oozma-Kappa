@@ -15,7 +15,7 @@ export default async function RecepcionesPage() {
       <PageHeader
         title="Registrar recepción"
         description="Alta rápida de donaciones físicas recibidas en el centro."
-        breadcrumbs={[{ label: "Inicio", href: "/" }, { label: "Recepción" }]}
+        breadcrumbs={[{ label: "Inicio", href: "/inicio" }, { label: "Recepción" }]}
       />
       {catalogs.campaigns.length === 0 ? (
         <EmptyState

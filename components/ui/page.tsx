@@ -101,11 +101,17 @@ export function StatCard({
     success: "border-emerald-200 bg-emerald-50/40",
   };
   return (
-    <div className={cn("rounded-lg border bg-white p-4", tones[tone])}>
+    <div
+      className={cn("rounded-lg border bg-white p-4", tones[tone])}
+      data-stat={label}
+    >
       <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
         {label}
       </p>
-      <p className="mt-1 text-2xl font-semibold tabular-nums text-slate-900">
+      <p
+        data-stat-value={label}
+        className="mt-1 text-2xl font-semibold tabular-nums text-slate-900"
+      >
         {value}
       </p>
       {hint && <p className="mt-1 text-xs text-slate-500">{hint}</p>}

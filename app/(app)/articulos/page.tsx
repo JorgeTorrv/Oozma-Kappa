@@ -26,7 +26,7 @@ export default async function ArticulosPage() {
       <PageHeader
         title="Catálogo de artículos"
         description="Artículos que se pueden recibir. Categorías y unidades flexibles."
-        breadcrumbs={[{ label: "Inicio", href: "/" }, { label: "Artículos" }]}
+        breadcrumbs={[{ label: "Inicio", href: "/inicio" }, { label: "Artículos" }]}
       />
       <div className="space-y-6">
         <Card>

@@ -19,7 +19,7 @@ export default async function InstitucionPage() {
         title="Entregas a tu institución"
         description="Consulta las entregas dirigidas a tu institución y confírmalas cuando las recibas."
         breadcrumbs={[
-          { label: "Inicio", href: "/" },
+          { label: "Inicio", href: "/inicio" },
           { label: "Entregas recibidas" },
         ]}
       />

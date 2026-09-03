@@ -33,7 +33,7 @@ export default async function MermasPage() {
       <PageHeader
         title="Mermas"
         description="Registro de mermas con motivo obligatorio. Permanecen visibles en el historial."
-        breadcrumbs={[{ label: "Inicio", href: "/" }, { label: "Mermas" }]}
+        breadcrumbs={[{ label: "Inicio", href: "/inicio" }, { label: "Mermas" }]}
       />
 
       <div className="space-y-6">
