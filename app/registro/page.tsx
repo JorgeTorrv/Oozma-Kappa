@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth/dal";
 import { prisma } from "@/lib/db";
 import { RegisterForm } from "@/features/auth/register-form";
@@ -10,7 +9,6 @@ export const metadata: Metadata = { title: "Ser voluntario · Acopia" };
 
 export default async function RegistroPage() {
   const user = await getCurrentUser();
-  if (user) redirect("/inicio");
 
   const centers = await prisma.center.findMany({
     where: { active: true },
@@ -33,6 +31,17 @@ export default async function RegistroPage() {
             activa cuando el encargado del centro la apruebe.
           </p>
         </div>
+
+        {user && (
+          <p className="mb-4 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+            Tienes una sesión iniciada como <strong>{user.name}</strong>. Este
+            formulario crea una cuenta de voluntario aparte.{" "}
+            <Link href="/inicio" className="font-medium underline">
+              Volver a mi panel
+            </Link>
+            .
+          </p>
+        )}
 
         <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
           {centers.length === 0 ? (
