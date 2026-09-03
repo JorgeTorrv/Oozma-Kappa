@@ -4,7 +4,7 @@ import { PageHeader, EmptyState } from "@/components/ui/page";
 import { Card, CardContent } from "@/components/ui/primitives";
 import { AdjustmentForm } from "@/features/movements/forms";
 
-export const metadata = { title: "Ajustes de inventario · Acopio Hub" };
+export const metadata = { title: "Ajustes de inventario · Acopia" };
 
 export default async function AjustesPage() {
   const { user } = await requireCapabilityPage("adjustment.create");

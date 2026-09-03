@@ -3,7 +3,7 @@ import { getMapCenters } from "@/features/map/data";
 import { PageHeader, EmptyState } from "@/components/ui/page";
 import { CentersMap } from "@/features/map/centers-map";
 
-export const metadata = { title: "Mapa de centros · Acopio Hub" };
+export const metadata = { title: "Mapa de centros · Acopia" };
 
 export default async function MapaPage() {
   await requireCapabilityPage("inventory.global.read", "inventory.campaign.read");

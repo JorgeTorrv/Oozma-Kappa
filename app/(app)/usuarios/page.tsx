@@ -13,7 +13,7 @@ import { UserRow } from "@/features/catalog/user-row";
 import { VolunteerPanel } from "@/features/team/panel";
 import { APPROVAL_STATUS, ROLE_LABELS, type Role } from "@/lib/constants";
 
-export const metadata = { title: "Usuarios · Acopio Hub" };
+export const metadata = { title: "Usuarios · Acopia" };
 
 export default async function UsuariosPage() {
   const { user } = await requireCapabilityPage("users.manage");

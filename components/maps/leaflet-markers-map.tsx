@@ -73,14 +73,14 @@ export function LeafletMarkersMap({
           const badge = m.badge ?? markerBadge(i);
           const icon = L.divIcon({
             className: "",
-            html: `<span style="display:flex;min-width:26px;height:26px;padding:0 6px;align-items:center;justify-content:center;border-radius:9999px;background:#1d4ed8;color:#fff;font-size:12px;font-weight:700;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35)">${badge}</span>`,
+            html: `<span style="display:flex;min-width:26px;height:26px;padding:0 6px;align-items:center;justify-content:center;border-radius:9999px;background:#1f5c3d;color:#fff;font-size:12px;font-weight:700;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35)">${badge}</span>`,
             iconSize: [26, 26],
             iconAnchor: [13, 13],
           });
           const marker = L.marker([m.lat, m.lng], { icon }).addTo(theMap);
           if (m.popupHtml) {
             marker.bindPopup(
-              `<strong style="color:#1d4ed8">${badge}.</strong> ${m.popupHtml}`,
+              `<strong style="color:#1f5c3d">${badge}.</strong> ${m.popupHtml}`,
             );
           }
         });

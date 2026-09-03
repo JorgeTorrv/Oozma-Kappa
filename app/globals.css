@@ -1,19 +1,25 @@
 @import "tailwindcss";
 
 /*
- * Acopio Hub — tema institucional.
- * Paleta sobria (azul institucional + neutros pizarra), pensada para lectura
- * rápida en centros de acopio. Sin gradientes decorativos.
+ * Acopia — paleta tomada del logo: verde bosque como color primario, verde
+ * olivo/hoja y tono kraft (cajas) como acentos, más un azul acero apagado.
  */
 @theme {
-  --color-brand-50: #eff6ff;
-  --color-brand-100: #dbeafe;
-  --color-brand-200: #bfdbfe;
-  --color-brand-500: #3b82f6;
-  --color-brand-600: #2563eb;
-  --color-brand-700: #1d4ed8;
-  --color-brand-800: #1e40af;
-  --color-brand-900: #1e3a8a;
+  --color-brand-50: #edf6f0;
+  --color-brand-100: #d6ebdd;
+  --color-brand-200: #aed7bd;
+  --color-brand-300: #7dbd95;
+  --color-brand-400: #4f9e6e;
+  --color-brand-500: #338257;
+  --color-brand-600: #256a45;
+  --color-brand-700: #1f5c3d;
+  --color-brand-800: #17492f;
+  --color-brand-900: #123a27;
+
+  /* Acentos del logo */
+  --color-leaf: #7ba05b;
+  --color-kraft: #b08d57;
+  --color-steel: #47799a;
 
   --font-sans:
     var(--font-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI",

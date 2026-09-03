@@ -13,7 +13,7 @@ import { InstitutionForm } from "@/features/catalog/forms";
 import { ToggleActiveButton } from "@/features/catalog/row-actions";
 import { toggleInstitutionAction } from "@/features/catalog/actions";
 
-export const metadata = { title: "Instituciones receptoras · Acopio Hub" };
+export const metadata = { title: "Instituciones receptoras · Acopia" };
 
 export default async function InstitucionesPage() {
   await requireCapabilityPage("institution.manage");

@@ -8,7 +8,7 @@ import { markAllReadAction } from "@/features/notifications/actions";
 import { formatDateTime } from "@/lib/format";
 import { CheckCheck } from "lucide-react";
 
-export const metadata = { title: "Notificaciones · Acopio Hub" };
+export const metadata = { title: "Notificaciones · Acopia" };
 
 export default async function NotificacionesPage() {
   const user = await requireUser();

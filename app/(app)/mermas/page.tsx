@@ -12,7 +12,7 @@ import { WasteForm } from "@/features/movements/forms";
 import { WasteApprovalList } from "@/features/movements/waste-approval";
 import { isWasteApprovalEnabled } from "@/services/movements.service";
 
-export const metadata = { title: "Mermas · Acopio Hub" };
+export const metadata = { title: "Mermas · Acopia" };
 
 export default async function MermasPage() {
   const user = await requireUser();

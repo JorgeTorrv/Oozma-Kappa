@@ -6,9 +6,9 @@ import { ToastProvider } from "@/components/ui/toast";
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
-  title: "Acopio Hub",
-  description:
-    "Sistema de registro y coordinación de centros de acopio para campañas de ayuda.",
+  title: "Acopia",
+  description: "Acopia — registro y coordinación de centros de acopio.",
+  icons: { icon: "/LogoAcopia.png" },
 };
 
 export default function RootLayout({

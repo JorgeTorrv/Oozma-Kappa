@@ -14,7 +14,7 @@ import { CenterForm } from "@/features/catalog/forms";
 import { ToggleActiveButton } from "@/features/catalog/row-actions";
 import { toggleCenterAction } from "@/features/catalog/actions";
 
-export const metadata = { title: "Centros · Acopio Hub" };
+export const metadata = { title: "Centros · Acopia" };
 
 export default async function CentrosPage() {
   await requireCapabilityPage("center.create");

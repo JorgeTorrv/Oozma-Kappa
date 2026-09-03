@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import {
-  Boxes,
   MapPin,
   Phone,
   Package,
@@ -14,16 +13,19 @@ import { getMapCenters } from "@/features/map/data";
 import { PublicCentersMap } from "@/features/public/centers-map";
 import { HeroMap } from "@/features/public/hero-map";
 import { markerBadge } from "@/components/maps/marker-badge";
+import { Logo } from "@/components/brand/logo";
 
 export const metadata: Metadata = {
-  title: "Acopio Hub — Dónde llevar tus donaciones",
+  title: "Acopia — Dónde llevar tus donaciones",
   description:
     "Centros de acopio activos: dirección, teléfono y cómo llegar. No necesitas cuenta para donar.",
 };
 
 export const dynamic = "force-dynamic";
 
-const GRAD = "bg-gradient-to-r from-violet-600 via-fuchsia-500 to-amber-400";
+/** Degradado de marca, tomado del logo (verde bosque → verde medio → hoja). */
+const GRAD = "bg-gradient-to-r from-brand-800 via-brand-600 to-leaf";
+const GRAD_TEXT = "bg-gradient-to-r from-brand-800 to-brand-500";
 
 const FEATURES = [
   {
@@ -70,7 +72,6 @@ export default async function LandingPage() {
     <div className="overflow-x-hidden bg-white text-slate-900">
       {/* ===================== Primera pantalla ===================== */}
       <section className="relative flex min-h-svh flex-col">
-        {/* forma difuminada de fondo */}
         <div
           aria-hidden
           className={`pointer-events-none absolute -right-40 -top-40 size-[36rem] rounded-full opacity-10 blur-3xl ${GRAD}`}
@@ -78,14 +79,9 @@ export default async function LandingPage() {
 
         {/* nav */}
         <header className="relative z-10 mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
-          <span className="flex items-center gap-2 font-semibold">
-            <span
-              className={`flex size-8 items-center justify-center rounded-lg text-white ${GRAD}`}
-            >
-              <Boxes className="size-4" />
-            </span>
-            Acopio Hub
-          </span>
+          <Link href="/" aria-label="Acopia — inicio">
+            <Logo height={60} />
+          </Link>
           <nav className="flex items-center gap-1 text-sm font-medium sm:gap-2">
             <Link
               href="#centros"
@@ -101,7 +97,7 @@ export default async function LandingPage() {
             </Link>
             <Link
               href="/login"
-              className="rounded-md px-2.5 py-2 text-violet-700 hover:bg-violet-50 sm:px-3"
+              className="rounded-md px-2.5 py-2 text-brand-700 hover:bg-brand-50 sm:px-3"
             >
               Acceso equipo
             </Link>
@@ -117,12 +113,7 @@ export default async function LandingPage() {
             <h1 className="mt-4 text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl">
               No busques mucho.
               <br />
-              <span
-                className={`bg-clip-text text-transparent ${GRAD.replace(
-                  "to-amber-400",
-                  "to-fuchsia-500",
-                )}`}
-              >
+              <span className={`bg-clip-text text-transparent ${GRAD_TEXT}`}>
                 DONA CERCA DE TI.
               </span>
             </h1>
@@ -134,7 +125,7 @@ export default async function LandingPage() {
             <div className="mt-8 flex flex-col items-start gap-4">
               <Link
                 href="#centros"
-                className={`inline-flex h-12 items-center gap-2 rounded-lg px-7 text-sm font-bold uppercase tracking-wide text-white shadow-lg shadow-violet-600/25 transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-600 ${GRAD}`}
+                className={`inline-flex h-12 items-center gap-2 rounded-lg px-7 text-sm font-bold uppercase tracking-wide text-white shadow-lg shadow-brand-700/25 transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 ${GRAD}`}
               >
                 Ver los {centers.length} centros
                 <ChevronRight className="size-4" />
@@ -143,7 +134,7 @@ export default async function LandingPage() {
                 ¿Colaboras dentro de un centro?{" "}
                 <Link
                   href="/registro"
-                  className="font-semibold text-violet-700 underline underline-offset-4 hover:text-violet-800"
+                  className="font-semibold text-brand-700 underline underline-offset-4 hover:text-brand-800"
                 >
                   Regístrate como voluntario
                 </Link>
@@ -181,7 +172,10 @@ export default async function LandingPage() {
       </section>
 
       {/* ========================= Centros ========================= */}
-      <section id="centros" className="scroll-mt-4 border-t border-slate-200 bg-slate-50/60">
+      <section
+        id="centros"
+        className="scroll-mt-4 border-t border-slate-200 bg-slate-50/60"
+      >
         <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 sm:py-16">
           <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
             Centros de acopio
@@ -231,7 +225,7 @@ export default async function LandingPage() {
                               <Phone className="mt-0.5 size-4 shrink-0 text-slate-400" />
                               <a
                                 href={`tel:${c.phone.replace(/\s+/g, "")}`}
-                                className="font-medium text-violet-700 hover:underline"
+                                className="font-medium text-brand-700 hover:underline"
                               >
                                 {c.phone}
                               </a>
@@ -242,7 +236,7 @@ export default async function LandingPage() {
                           href={mapsUrl(c)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-violet-700 hover:underline"
+                          className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-brand-700 hover:underline"
                         >
                           Cómo llegar <ArrowRight className="size-3.5" />
                         </a>
@@ -257,9 +251,10 @@ export default async function LandingPage() {
       </section>
 
       <footer className="border-t border-slate-200">
-        <div className="mx-auto max-w-5xl px-4 py-6 text-sm text-slate-500 sm:px-6">
-          Acopio Hub · coordinación de centros de acopio.{" "}
-          <Link href="/login" className="text-violet-700 hover:underline">
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-3 gap-y-1 px-4 py-6 text-sm text-slate-500 sm:px-6">
+          <Logo height={40} />
+          <span>· coordinación de centros de acopio.</span>
+          <Link href="/login" className="text-brand-700 hover:underline">
             Acceso del equipo
           </Link>
         </div>

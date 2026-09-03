@@ -17,7 +17,7 @@ import { ToggleActiveButton } from "@/features/catalog/row-actions";
 import { toggleCampaignAction } from "@/features/catalog/actions";
 import { formatDate, toDateInputValue } from "@/lib/format";
 
-export const metadata = { title: "Campañas · Acopio Hub" };
+export const metadata = { title: "Campañas · Acopia" };
 
 export default async function CampanasPage() {
   const user = await requireUser();

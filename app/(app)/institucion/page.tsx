@@ -2,7 +2,7 @@ import { requireCapabilityPage } from "@/lib/auth/dal";
 import { PageHeader, EmptyState } from "@/components/ui/page";
 import { InstitutionDeliveries } from "@/features/institution/deliveries";
 
-export const metadata = { title: "Entregas recibidas · Acopio Hub" };
+export const metadata = { title: "Entregas recibidas · Acopia" };
 
 export default async function InstitucionPage() {
   const { user } = await requireCapabilityPage("delivery.confirm");

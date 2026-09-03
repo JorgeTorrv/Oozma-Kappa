@@ -4,7 +4,7 @@ import { PageHeader, EmptyState } from "@/components/ui/page";
 import { Card, CardContent } from "@/components/ui/primitives";
 import { DeliveryForm } from "@/features/movements/forms";
 
-export const metadata = { title: "Entregas · Acopio Hub" };
+export const metadata = { title: "Entregas · Acopia" };
 
 export default async function EntregasPage() {
   const { user } = await requireCapabilityPage("delivery.create");

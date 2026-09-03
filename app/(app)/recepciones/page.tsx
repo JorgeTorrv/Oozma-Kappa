@@ -4,7 +4,7 @@ import { PageHeader, EmptyState } from "@/components/ui/page";
 import { Card, CardContent } from "@/components/ui/primitives";
 import { ReceptionForm } from "@/features/movements/forms";
 
-export const metadata = { title: "Registrar recepción · Acopio Hub" };
+export const metadata = { title: "Registrar recepción · Acopia" };
 
 export default async function RecepcionesPage() {
   const { user } = await requireCapabilityPage("reception.create");

@@ -13,7 +13,7 @@ import { ArticleForm } from "@/features/catalog/forms";
 import { ToggleActiveButton } from "@/features/catalog/row-actions";
 import { toggleArticleAction } from "@/features/catalog/actions";
 
-export const metadata = { title: "Artículos · Acopio Hub" };
+export const metadata = { title: "Artículos · Acopia" };
 
 export default async function ArticulosPage() {
   await requireCapabilityPage("article.manage");

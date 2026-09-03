@@ -3,7 +3,7 @@ import { ROLES } from "@/lib/constants";
 import { PageHeader, EmptyState } from "@/components/ui/page";
 import { VolunteerPanel } from "@/features/team/panel";
 
-export const metadata = { title: "Mi equipo · Acopio Hub" };
+export const metadata = { title: "Mi equipo · Acopia" };
 
 export default async function MiEquipoPage() {
   const { user } = await requireCapabilityPage("team.manage", "users.manage");

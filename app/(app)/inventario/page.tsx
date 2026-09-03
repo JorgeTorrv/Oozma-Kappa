@@ -13,7 +13,7 @@ import { formatQuantity } from "@/lib/format";
 import { LOW_STOCK_THRESHOLD } from "@/lib/constants";
 import { Download } from "lucide-react";
 
-export const metadata = { title: "Inventario · Acopio Hub" };
+export const metadata = { title: "Inventario · Acopia" };
 
 export default async function InventarioPage({
   searchParams,

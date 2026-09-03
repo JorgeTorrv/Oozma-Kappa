@@ -4,7 +4,7 @@ import { PageHeader, EmptyState } from "@/components/ui/page";
 import { Card, CardContent } from "@/components/ui/primitives";
 import { TransferForm } from "@/features/movements/forms";
 
-export const metadata = { title: "Transferencias · Acopio Hub" };
+export const metadata = { title: "Transferencias · Acopia" };
 
 export default async function TransferenciasPage() {
   const { user } = await requireCapabilityPage("transfer.create");

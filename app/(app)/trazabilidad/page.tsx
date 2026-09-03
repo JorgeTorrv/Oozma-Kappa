@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { TraceTimeline } from "@/features/traceability/timeline";
 import { formatQuantity } from "@/lib/format";
 
-export const metadata = { title: "Trazabilidad · Acopio Hub" };
+export const metadata = { title: "Trazabilidad · Acopia" };
 
 export default async function TrazabilidadPage({
   searchParams,

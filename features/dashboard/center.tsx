@@ -59,7 +59,7 @@ export async function CenterDashboard({ centerId }: { centerId: string }) {
           data={d.charts.topArticles}
           xKey="article"
           yKey="quantity"
-          color="#059669"
+          color="#4f9e6e"
         />
         <PieChartCard
           title="Inventario por categoría"

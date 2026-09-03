@@ -17,7 +17,7 @@ import {
 } from "@/features/history/query";
 import { Download } from "lucide-react";
 
-export const metadata = { title: "Movimientos · Acopio Hub" };
+export const metadata = { title: "Movimientos · Acopia" };
 
 export default async function MovimientosPage({
   searchParams,

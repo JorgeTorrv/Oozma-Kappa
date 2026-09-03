@@ -31,6 +31,7 @@ import { cn } from "@/lib/utils";
 import { ROLE_LABELS, type Role } from "@/lib/constants";
 import type { IconKey, NavGroup } from "./nav-config";
 import { logoutAction } from "@/features/auth/actions";
+import { Logo } from "@/components/brand/logo";
 
 const ICONS: Record<IconKey, LucideIcon> = {
   dashboard: LayoutDashboard,
@@ -77,14 +78,8 @@ export function AppShell({
 
       {/* Topbar móvil */}
       <div className="sticky top-0 z-30 flex items-center justify-between border-b border-slate-200 bg-white px-3 py-2 lg:hidden">
-        <Link
-          href="/inicio"
-          className="flex items-center gap-2 py-1 pl-1 font-semibold"
-        >
-          <span className="flex size-8 items-center justify-center rounded-lg bg-brand-700 text-white">
-            <Boxes className="size-4" />
-          </span>
-          Acopio Hub
+        <Link href="/inicio" className="py-1 pl-1" aria-label="Acopia — inicio">
+          <Logo height={52} />
         </Link>
         <div className="flex items-center gap-1">
           <Link
@@ -192,11 +187,10 @@ function SidebarContent({
 }) {
   return (
     <div className="flex h-full flex-col overflow-y-auto">
-      <div className="hidden items-center gap-2 px-5 py-4 font-semibold lg:flex">
-        <span className="flex size-8 items-center justify-center rounded-lg bg-brand-700 text-white">
-          <Boxes className="size-4" />
-        </span>
-        Acopio Hub
+      <div className="hidden px-4 py-4 lg:block">
+        <Link href="/inicio" aria-label="Acopia — inicio">
+          <Logo height={80} />
+        </Link>
       </div>
       <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-3">
         {nav.map((group, gi) => (

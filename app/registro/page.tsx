@@ -4,9 +4,9 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth/dal";
 import { prisma } from "@/lib/db";
 import { RegisterForm } from "@/features/auth/register-form";
-import { Boxes } from "lucide-react";
+import { Logo } from "@/components/brand/logo";
 
-export const metadata: Metadata = { title: "Ser voluntario · Acopio Hub" };
+export const metadata: Metadata = { title: "Ser voluntario · Acopia" };
 
 export default async function RegistroPage() {
   const user = await getCurrentUser();
@@ -22,14 +22,10 @@ export default async function RegistroPage() {
     <main className="flex min-h-dvh items-center justify-center bg-slate-50 px-4 py-10">
       <div className="w-full max-w-md">
         <div className="mb-8 flex flex-col items-center text-center">
-          <Link
-            href="/"
-            className="mb-3 flex size-12 items-center justify-center rounded-xl bg-brand-700 text-white transition-colors hover:bg-brand-800"
-            aria-label="Ir al inicio"
-          >
-            <Boxes className="size-6" />
+          <Link href="/" aria-label="Ir al inicio">
+            <Logo height={130} />
           </Link>
-          <h1 className="text-lg font-semibold text-slate-900">
+          <h1 className="mt-3 text-lg font-semibold text-slate-900">
             Regístrate como voluntario
           </h1>
           <p className="mt-1 max-w-sm text-sm text-slate-500">

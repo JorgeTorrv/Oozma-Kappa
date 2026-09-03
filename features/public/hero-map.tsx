@@ -10,7 +10,7 @@ import { markerBadge } from "@/components/maps/marker-badge";
 
 /**
  * Imagen del hero: el mapa real de centros recortado en una forma orgánica,
- * con un tinte duotono violeta→ámbar (estilo del diseño de referencia). Si el
+ * con un tinte duotono verde→kraft del logo. Si el
  * mapa no carga, la forma se rellena con el degradado.
  */
 export function HeroMap({ centers }: { centers: MapCenter[] }) {
@@ -36,7 +36,7 @@ export function HeroMap({ centers }: { centers: MapCenter[] }) {
       <svg
         aria-hidden
         viewBox="0 0 200 200"
-        className="pointer-events-none absolute -right-6 -top-8 h-[115%] w-[115%] text-violet-300/40"
+        className="pointer-events-none absolute -right-6 -top-8 h-[115%] w-[115%] text-brand-300/50"
       >
         {[92, 74, 56, 38].map((r) => (
           <circle
@@ -51,9 +51,9 @@ export function HeroMap({ centers }: { centers: MapCenter[] }) {
         ))}
       </svg>
 
-      <div className="relative aspect-square w-full overflow-hidden rounded-[42%_58%_63%_37%/45%_44%_56%_55%] shadow-[0_24px_60px_-20px_rgba(124,58,237,.45)] ring-1 ring-black/5">
+      <div className="relative aspect-square w-full overflow-hidden rounded-[42%_58%_63%_37%/45%_44%_56%_55%] shadow-[0_24px_60px_-20px_rgba(31,92,61,.45)] ring-1 ring-black/5">
         {failed ? (
-          <div className="size-full bg-gradient-to-br from-violet-600 via-fuchsia-500 to-amber-400" />
+          <div className="size-full bg-gradient-to-br from-brand-800 via-brand-600 to-leaf" />
         ) : (
           <LeafletMarkersMap
             markers={markers}
@@ -62,8 +62,8 @@ export function HeroMap({ centers }: { centers: MapCenter[] }) {
             onFail={() => setFailed(true)}
           />
         )}
-        {/* tinte duotono */}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-violet-700/35 via-fuchsia-600/15 to-amber-400/25 mix-blend-multiply" />
+        {/* tinte duotono con los verdes y el kraft del logo */}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-brand-900/40 via-brand-700/12 to-kraft/25 mix-blend-multiply" />
         <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/20" />
       </div>
     </div>
