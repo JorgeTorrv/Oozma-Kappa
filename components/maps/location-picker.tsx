@@ -55,9 +55,19 @@ export function LocationPicker({
         attribution: "&copy; OpenStreetMap",
         maxZoom: 19,
       }).addTo(map);
-      const marker = L.marker([start.lat, start.lng], { draggable: true }).addTo(
-        map,
-      );
+      // Icono propio (divIcon): evita el problema del icono PNG por defecto de
+      // Leaflet, que no resuelve bien la ruta con el bundler y sale roto.
+      const pinIcon = L.divIcon({
+        className: "",
+        html: `<span style="display:block;width:20px;height:20px;border-radius:9999px;background:#1f5c3d;border:3px solid #fff;box-shadow:0 1px 6px rgba(0,0,0,.4)"></span>`,
+        iconSize: [20, 20],
+        iconAnchor: [10, 10],
+      });
+      const marker = L.marker([start.lat, start.lng], {
+        draggable: true,
+        icon: pinIcon,
+        autoPan: true,
+      }).addTo(map);
       marker.on("dragend", () => {
         const p = marker.getLatLng();
         setPos({ lat: +p.lat.toFixed(6), lng: +p.lng.toFixed(6) });
