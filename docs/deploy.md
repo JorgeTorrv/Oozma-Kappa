@@ -48,8 +48,11 @@ Comprueba en Supabase → **Table editor** que aparecen las tablas y filas.
 
 1. Sube el repo a GitHub (ya está en `JorgeTorrv/Oozma-Kappa`).
 2. En <https://vercel.com> → **Add New → Project** → importa el repo.
-3. Framework preset: **Next.js** (autodetectado). Build command y output por
-   defecto. **Install command:** `npm ci` (para respetar `package-lock.json`).
+3. El repo trae `vercel.json`: framework **Next.js**, `installCommand: npm ci` y
+   `buildCommand: npm run vercel-build`. No hay que configurar nada de build a
+   mano. `vercel-build` corre `prisma generate && prisma migrate deploy &&
+   next build`, así que **cada deploy aplica las migraciones pendientes solo**
+   (necesita `DIRECT_URL` en las variables, ver abajo).
 4. **Environment Variables** (Project Settings → Environment Variables), para
    *Production* y *Preview*:
 
@@ -63,12 +66,11 @@ Comprueba en Supabase → **Table editor** que aparecen las tablas y filas.
    | `NOMINATIM_CONTACT_EMAIL` | tu correo *(opcional, buena práctica)* |
 
    Todas quedan guardadas como **secrets** cifrados por Vercel.
-5. **Deploy**. El `postinstall` corre `prisma generate` en el build de Vercel.
+5. **Deploy**. `npm run vercel-build` genera el cliente Prisma, aplica
+   migraciones y compila.
 6. Cuando cambies el esquema en el futuro: crea la migración en local
-   (`npx prisma migrate dev --name algo`), commitea `prisma/migrations/**`, y en
-   Vercel añade un **Build Command** override:
-   `prisma migrate deploy && next build`
-   (o corre `npx prisma migrate deploy` manualmente contra `DIRECT_URL`).
+   (`npx prisma migrate dev --name algo`) y commitea `prisma/migrations/**`. El
+   siguiente deploy de Vercel la aplica solo vía `vercel-build`.
 
 ### Notas
 
@@ -112,3 +114,39 @@ npx prisma migrate reset --force        # aplica migraciones + seed
 # o sólo re-sembrar:
 npm run db:seed
 ```
+
+---
+
+## 5. Pasar a producción real (sin datos demo)
+
+Cuando quieras dejar la base **vacía de datos demo** y con **una sola cuenta de
+coordinador general**, usa `npm run db:go-live`. No toca el esquema; sólo borra
+filas y crea el admin.
+
+```bash
+# 1) Apunta a la base de PRODUCCIÓN (las mismas cadenas de Supabase que Vercel)
+export DATABASE_URL="postgresql://...pooler...:6543/postgres?pgbouncer=true&connection_limit=1"
+export DIRECT_URL="postgresql://...pooler...:5432/postgres"
+
+# 2) Datos del único admin
+export ADMIN_PHONE="833 111 2233"        # obligatorio — es el identificador de acceso
+export ADMIN_PASSWORD="una-contraseña-larga-y-propia"   # obligatorio, >= 8
+export ADMIN_EMAIL="admin@tudominio.mx"  # opcional
+export ADMIN_NAME="Coordinación general" # opcional
+
+# 3) Simulacro: muestra qué borraría, sin cambiar nada
+npm run db:go-live
+
+# 4) De verdad: añade CONFIRM=WIPE
+CONFIRM=WIPE npm run db:go-live
+```
+
+Después entras en `/login` con ese teléfono (o correo) y la contraseña. Desde
+ahí el coordinador crea centros, encargados, campañas, etc.
+
+Mientras tanto los datos demo siguen intactos: `db:go-live` sólo actúa cuando lo
+corres tú con `CONFIRM=WIPE`. Para volver a datos demo en cualquier base:
+`npm run db:seed`.
+
+> El borrado es irreversible. Si la base ya tiene datos reales, haz antes un
+> backup en Supabase → **Database → Backups**.

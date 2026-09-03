@@ -37,6 +37,7 @@ yarn-error.log*
 .env
 .env.*
 !.env.example
+!.env.production.example
 
 # base de datos SQLite (se genera con migraciones + seed)
 *.db

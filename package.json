@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "vercel-build": "prisma generate && prisma migrate deploy && next build",
     "start": "next start",
     "lint": "eslint",
     "format": "prettier --write .",
@@ -23,6 +24,7 @@
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
     "db:reset-demo": "prisma migrate reset --force",
+    "db:go-live": "tsx scripts/go-live.ts",
     "setup": "prisma generate && prisma migrate deploy && prisma db seed",
     "demo": "node scripts/demo.mjs",
     "postinstall": "prisma generate"
