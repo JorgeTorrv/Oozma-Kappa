@@ -93,13 +93,17 @@ export default async function LandingPage() {
               href="/registro"
               className="rounded-md px-2.5 py-2 text-slate-600 hover:text-slate-900 sm:px-3"
             >
-              Voluntario
+              <span className="sm:hidden">Voluntario</span>
+              <span className="hidden sm:inline">
+                Regístrate como voluntario
+              </span>
             </Link>
             <Link
               href="/login"
               className="rounded-md px-2.5 py-2 text-brand-700 hover:bg-brand-50 sm:px-3"
             >
-              Acceso equipo
+              <span className="sm:hidden">Acceso</span>
+              <span className="hidden sm:inline">Acceso equipo</span>
             </Link>
           </nav>
         </header>
