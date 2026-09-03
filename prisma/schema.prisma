@@ -1,0 +1,308 @@
+// Acopio Hub — Prisma schema (SQLite).
+// SQLite no soporta enums nativos: los campos "enum" se guardan como String y
+// se validan a nivel de aplicación con Zod (ver lib/constants.ts y validators/).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// Usuarios del sistema. El donante NO tiene cuenta.
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  username     String?  @unique
+  passwordHash String
+  role         String // ver ROLES en lib/constants.ts
+  active       Boolean  @default(true)
+
+  // Relación opcional según rol.
+  centerId      String?
+  center        Center?               @relation(fields: [centerId], references: [id])
+  institutionId String?
+  institution   RecipientInstitution? @relation(fields: [institutionId], references: [id])
+  campaignId    String?
+  campaign      Campaign?             @relation("CampaignLeaders", fields: [campaignId], references: [id])
+
+  sessions      Session[]
+  movements     Movement[]     @relation("MovementActor")
+  transfers     Transfer[]     @relation("TransferActor")
+  auditLogs     AuditLog[]
+  notifications Notification[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([role])
+  @@index([centerId])
+}
+
+/// Sesión de servidor. La cookie sólo guarda un token opaco aleatorio; en la
+/// base se almacena únicamente su hash SHA-256, de modo que un volcado de la
+/// tabla no permite reutilizar sesiones.
+model Session {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model Campaign {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  startDate   DateTime
+  endDate     DateTime?
+  active      Boolean   @default(true)
+
+  centers   CampaignCenter[]
+  movements Movement[]
+  transfers Transfer[]
+  goals     CampaignGoal[]
+  inventory InventoryItem[]
+  leaders   User[]           @relation("CampaignLeaders")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([active])
+}
+
+model Center {
+  id          String  @id @default(cuid())
+  name        String
+  institution String?
+  address     String?
+  latitude    Float?
+  longitude   Float?
+  active      Boolean @default(true)
+
+  campaigns          CampaignCenter[]
+  users              User[]
+  movements          Movement[]       @relation("MovementCenter")
+  incomingTransferMv Movement[]       @relation("MovementDestinationCenter")
+  transfersOut       Transfer[]       @relation("TransferFrom")
+  transfersIn        Transfer[]       @relation("TransferTo")
+  inventory          InventoryItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([active])
+}
+
+/// Tabla puente: qué centros participan en qué campañas.
+model CampaignCenter {
+  id         String   @id @default(cuid())
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  centerId   String
+  center     Center   @relation(fields: [centerId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([campaignId, centerId])
+  @@index([centerId])
+}
+
+/// Catálogo flexible de artículos. `category` y `unit` son texto libre validado
+/// contra una lista sugerida, no un enum cerrado.
+model Article {
+  id       String  @id @default(cuid())
+  name     String  @unique
+  category String
+  unit     String
+  active   Boolean @default(true)
+
+  movements Movement[]
+  transfers Transfer[]
+  goals     CampaignGoal[]
+  inventory InventoryItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+  @@index([active])
+}
+
+/// Donante opcional. Nunca se exigen datos.
+model Donor {
+  id        String     @id @default(cuid())
+  name      String?
+  phone     String?
+  email     String?
+  createdAt DateTime   @default(now())
+  movements Movement[]
+}
+
+model RecipientInstitution {
+  id          String  @id @default(cuid())
+  name        String
+  contactName String?
+  phone       String?
+  address     String?
+  active      Boolean @default(true)
+
+  users     User[]
+  movements Movement[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([active])
+}
+
+/// Movimiento de inventario. Fuente única de trazabilidad: el stock se puede
+/// reconstruir sumando/restando movimientos. NUNCA se borran desde la UI normal.
+model Movement {
+  id       String  @id @default(cuid())
+  type     String // RECEPTION | DELIVERY | WASTE | TRANSFER_IN | TRANSFER_OUT | ADJUSTMENT_POSITIVE | ADJUSTMENT_NEGATIVE
+  quantity Decimal
+
+  centerId   String
+  center     Center   @relation("MovementCenter", fields: [centerId], references: [id])
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id])
+  articleId  String
+  article    Article  @relation(fields: [articleId], references: [id])
+
+  actorUserId String
+  actor       User   @relation("MovementActor", fields: [actorUserId], references: [id])
+
+  recipientInstitutionId String?
+  recipientInstitution   RecipientInstitution? @relation(fields: [recipientInstitutionId], references: [id])
+  destinationCenterId    String?
+  destinationCenter      Center?               @relation("MovementDestinationCenter", fields: [destinationCenterId], references: [id])
+  transferId             String?
+  transfer               Transfer?             @relation(fields: [transferId], references: [id])
+  donorId                String?
+  donor                  Donor?                @relation(fields: [donorId], references: [id])
+
+  // Estado para flujos con ciclo de vida:
+  //  - DELIVERY: PENDING | CONFIRMED
+  //  - WASTE:    PENDING_APPROVAL | APPROVED | REJECTED  (aprobación de merma, extra)
+  status       String?
+  reason       String?
+  notes        String?
+  confirmedAt  DateTime?
+  resolvedById String?
+
+  createdAt DateTime @default(now())
+
+  @@index([campaignId])
+  @@index([centerId])
+  @@index([articleId])
+  @@index([type])
+  @@index([createdAt])
+  @@index([status])
+  @@index([transferId])
+  @@index([centerId, campaignId, articleId])
+}
+
+/// Une TRANSFER_OUT (origen) + TRANSFER_IN (destino) en una sola operación.
+model Transfer {
+  id         String   @id @default(cuid())
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id])
+  articleId  String
+  article    Article  @relation(fields: [articleId], references: [id])
+  quantity   Decimal
+
+  fromCenterId String
+  fromCenter   Center @relation("TransferFrom", fields: [fromCenterId], references: [id])
+  toCenterId   String
+  toCenter     Center @relation("TransferTo", fields: [toCenterId], references: [id])
+
+  actorUserId String
+  actor       User   @relation("TransferActor", fields: [actorUserId], references: [id])
+  notes       String?
+  status      String @default("COMPLETED") // COMPLETED (operación atómica confirmada)
+
+  movements Movement[]
+  createdAt DateTime @default(now())
+
+  @@index([campaignId])
+  @@index([fromCenterId])
+  @@index([toCenterId])
+}
+
+/// Inventario materializado (caché de rendimiento). La verdad sigue siendo la
+/// suma de Movement; InventoryService mantiene esta tabla consistente.
+model InventoryItem {
+  id         String   @id @default(cuid())
+  centerId   String
+  center     Center   @relation(fields: [centerId], references: [id])
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id])
+  articleId  String
+  article    Article  @relation(fields: [articleId], references: [id])
+  quantity   Decimal  @default(0)
+  updatedAt  DateTime @updatedAt
+
+  @@unique([centerId, campaignId, articleId])
+  @@index([campaignId])
+  @@index([articleId])
+}
+
+/// Meta de recolección por campaña (extra). Por artículo o por categoría.
+model CampaignGoal {
+  id         String   @id @default(cuid())
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  articleId  String?
+  article    Article? @relation(fields: [articleId], references: [id])
+  category   String?
+  targetQty  Decimal
+  unit       String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([campaignId])
+}
+
+/// Notificaciones internas de la aplicación (extra). Sin correo, sin servicios externos.
+model Notification {
+  id        String   @id @default(cuid())
+  type      String
+  title     String
+  body      String?
+  // Destinatario: un usuario concreto y/o un rol y/o un centro.
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      String?
+  centerId  String?
+  link      String?
+  readAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([role])
+  @@index([centerId])
+  @@index([readAt])
+}
+
+/// Bitácora de acciones administrativas relevantes.
+model AuditLog {
+  id          String   @id @default(cuid())
+  actorUserId String
+  actor       User     @relation(fields: [actorUserId], references: [id])
+  action      String
+  entity      String
+  entityId    String?
+  meta        String? // JSON serializado
+  createdAt   DateTime @default(now())
+
+  @@index([actorUserId])
+  @@index([entity])
+  @@index([createdAt])
+}
