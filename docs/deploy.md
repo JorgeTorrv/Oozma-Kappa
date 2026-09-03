@@ -60,8 +60,12 @@ Comprueba en Supabase → **Table editor** que aparecen las tablas y filas.
    | --- | --- |
    | `DATABASE_URL` | cadena pooler `:6543` + `?pgbouncer=true&connection_limit=1` |
    | `DIRECT_URL` | cadena directa `:5432` |
-   | `NODE_ENV` | `production` |
    | `WASTE_APPROVAL_ENABLED` | `true` *(opcional)* |
+
+   **No agregues `NODE_ENV`.** Vercel ya la fija en `production` para build y
+   runtime; ponerla a mano hace que `npm ci` omita las devDependencies
+   (`@tailwindcss/postcss`, `typescript`, `prisma`…) y el build falla con
+   `Cannot find module '@tailwindcss/postcss'`.
    | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | *(opcional, ver §3)* |
    | `NOMINATIM_CONTACT_EMAIL` | tu correo *(opcional, buena práctica)* |
 
