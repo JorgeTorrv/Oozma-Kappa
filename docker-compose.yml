@@ -1,0 +1,28 @@
+# Acopio Hub — ejecución con Docker.
+#
+#   docker compose up --build
+#
+# La base SQLite se guarda en el volumen "acopio_data" (persistente entre
+# reinicios). No se usan rutas absolutas del equipo del desarrollador.
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: acopio-hub:latest
+    container_name: acopio-hub
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      DATABASE_URL: "file:/data/acopio.db"
+      # Poner "false" para desactivar el flujo de aprobación de mermas.
+      WASTE_APPROVAL_ENABLED: "true"
+    volumes:
+      - acopio_data:/data
+    restart: unless-stopped
+
+volumes:
+  acopio_data:
