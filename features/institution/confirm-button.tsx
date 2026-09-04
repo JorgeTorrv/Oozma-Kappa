@@ -10,6 +10,8 @@ export function ConfirmDeliveryButton({ movementId }: { movementId: string }) {
       size="sm"
       action={() => confirmDeliveryAction(movementId)}
       confirm="¿Confirmar que tu institución recibió esta entrega?"
+      confirmTitle="Confirmar recepción"
+      confirmLabel="Confirmar"
       successToast="Entrega confirmada como recibida."
     >
       <CheckCircle2 className="size-4" />

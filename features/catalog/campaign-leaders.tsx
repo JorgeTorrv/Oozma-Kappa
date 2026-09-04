@@ -60,6 +60,9 @@ export function CampaignLeaders({
                   variant="outline"
                   action={() => removeCampaignLeaderAction(l.id)}
                   confirm="¿Retirar a este líder de la campaña? Su cuenta quedará desactivada."
+                  confirmTitle="Retirar líder"
+                  confirmLabel="Retirar"
+                  confirmVariant="destructive"
                 >
                   Quitar
                 </ActionButton>

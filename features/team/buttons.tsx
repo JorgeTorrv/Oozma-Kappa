@@ -16,6 +16,8 @@ export function VolunteerDecisionButtons({ userId }: { userId: string }) {
         action={() => approveVolunteerAction(userId)}
         successToast="Voluntario aprobado."
         confirm="¿Aprobar esta cuenta? Podrá iniciar sesión."
+        confirmTitle="Aprobar voluntario"
+        confirmLabel="Aprobar"
       >
         <Check className="size-4" />
         Aprobar
@@ -26,6 +28,9 @@ export function VolunteerDecisionButtons({ userId }: { userId: string }) {
         action={() => rejectVolunteerAction(userId)}
         successToast="Solicitud rechazada."
         confirm="¿Rechazar esta solicitud?"
+        confirmTitle="Rechazar solicitud"
+        confirmLabel="Rechazar"
+        confirmVariant="destructive"
       >
         <X className="size-4" />
         Rechazar
@@ -51,6 +56,9 @@ export function VolunteerToggleButton({
           ? "¿Desactivar a este voluntario? Se cerrará su sesión."
           : "¿Reactivar a este voluntario?"
       }
+      confirmTitle={active ? "Desactivar voluntario" : "Reactivar voluntario"}
+      confirmLabel={active ? "Desactivar" : "Reactivar"}
+      confirmVariant={active ? "destructive" : "default"}
     >
       <Power className="size-3.5" />
       {active ? "Desactivar" : "Reactivar"}

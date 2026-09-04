@@ -58,8 +58,8 @@ test("recorrido de demostración: recepción → transferencia → entrega → c
   await login(page, "encargado.tampico@acopio.local");
   await page.goto("/mi-equipo");
   const approveRow = page.getByRole("row", { name: /Tomás Rivera/ });
-  page.once("dialog", (dlg) => dlg.accept());
   await approveRow.getByRole("button", { name: "Aprobar" }).click();
+  await page.getByRole("dialog").getByRole("button", { name: "Aprobar" }).click();
   await expect(page.getByText(/Voluntario aprobado/)).toBeVisible();
   await logout(page);
 
@@ -122,7 +122,7 @@ test("recorrido de demostración: recepción → transferencia → entrega → c
     .getByRole("button", { name: "Confirmar recepción" })
     .first();
   await expect(confirmBtn).toBeVisible();
-  page.once("dialog", (d) => d.accept());
   await confirmBtn.click();
+  await page.getByRole("dialog").getByRole("button", { name: "Confirmar" }).click();
   await expect(page.getByText(/Entrega confirmada/)).toBeVisible();
 });

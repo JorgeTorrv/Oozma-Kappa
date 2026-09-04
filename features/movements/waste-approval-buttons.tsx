@@ -11,6 +11,8 @@ export function WasteDecisionButtons({ movementId }: { movementId: string }) {
         size="sm"
         action={() => approveWasteAction(movementId)}
         confirm="¿Aprobar esta merma? El inventario disminuirá."
+        confirmTitle="Aprobar merma"
+        confirmLabel="Aprobar"
         successToast="Merma aprobada."
       >
         <Check className="size-4" />
@@ -21,6 +23,9 @@ export function WasteDecisionButtons({ movementId }: { movementId: string }) {
         variant="outline"
         action={() => rejectWasteAction(movementId)}
         confirm="¿Rechazar esta merma? El inventario no se modificará."
+        confirmTitle="Rechazar merma"
+        confirmLabel="Rechazar"
+        confirmVariant="destructive"
         successToast="Merma rechazada."
       >
         <X className="size-4" />

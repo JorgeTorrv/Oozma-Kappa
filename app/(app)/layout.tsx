@@ -16,10 +16,14 @@ export default async function AppLayout({
 
   // Ámbito legible (centro / institución / campaña) para la cabecera.
   let scope: string | null = null;
+  let disabledCenterName: string | null = null;
   if (user.centerId) {
-    scope =
-      (await prisma.center.findUnique({ where: { id: user.centerId } }))?.name ??
-      null;
+    const center = await prisma.center.findUnique({
+      where: { id: user.centerId },
+      select: { name: true, active: true },
+    });
+    scope = center?.name ?? null;
+    if (center && !center.active) disabledCenterName = center.name;
   } else if (user.institutionId) {
     scope =
       (
@@ -46,6 +50,7 @@ export default async function AppLayout({
       nav={nav}
       user={{ name: user.name, role: user.role as Role, scope }}
       unread={unread}
+      disabledCenterName={disabledCenterName}
     >
       {children}
     </AppShell>

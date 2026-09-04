@@ -26,6 +26,7 @@ import {
   UsersRound,
   UserCheck,
   ClipboardCheck,
+  AlertTriangle,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -60,11 +61,14 @@ export function AppShell({
   nav,
   user,
   unread,
+  disabledCenterName,
   children,
 }: {
   nav: NavGroup[];
   user: { name: string; role: Role; scope: string | null };
   unread: number;
+  /** Nombre del centro del usuario si está desactivado — pinta un aviso fijo en todos los módulos. */
+  disabledCenterName?: string | null;
   children: React.ReactNode;
 }) {
   const [open, setOpen] = React.useState(false);
@@ -78,33 +82,36 @@ export function AppShell({
         <SidebarContent nav={nav} pathname={pathname} unread={unread} />
       </aside>
 
-      {/* Topbar móvil */}
-      <div className="sticky top-0 z-[1001] flex items-center justify-between border-b border-slate-200 bg-white px-3 py-2 lg:hidden">
-        <Link href="/" className="py-1 pl-1" aria-label="Acopia — inicio">
-          <Logo height={52} />
-        </Link>
-        <div className="flex items-center gap-1">
-          <Link
-            href="/notificaciones"
-            className="relative flex size-11 items-center justify-center rounded-md text-slate-600 hover:bg-slate-100"
-            aria-label={`Notificaciones${unread ? `, ${unread} sin leer` : ""}`}
-          >
-            <Bell className="size-5" />
-            {unread > 0 && (
-              <span className="absolute right-1.5 top-1.5 flex min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-semibold text-white">
-                {unread > 9 ? "9+" : unread}
-              </span>
-            )}
+      {/* Topbar móvil (+ aviso de centro desactivado, si aplica) */}
+      <div className="sticky top-0 z-[1001] lg:hidden">
+        <div className="flex items-center justify-between border-b border-slate-200 bg-white px-3 py-2">
+          <Link href="/" className="py-1 pl-1" aria-label="Acopia — inicio">
+            <Logo height={52} />
           </Link>
-          <button
-            type="button"
-            onClick={() => setOpen(true)}
-            className="flex size-11 items-center justify-center rounded-md hover:bg-slate-100"
-            aria-label="Abrir menú"
-          >
-            <Menu className="size-5" />
-          </button>
+          <div className="flex items-center gap-1">
+            <Link
+              href="/notificaciones"
+              className="relative flex size-11 items-center justify-center rounded-md text-slate-600 hover:bg-slate-100"
+              aria-label={`Notificaciones${unread ? `, ${unread} sin leer` : ""}`}
+            >
+              <Bell className="size-5" />
+              {unread > 0 && (
+                <span className="absolute right-1.5 top-1.5 flex min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-semibold text-white">
+                  {unread > 9 ? "9+" : unread}
+                </span>
+              )}
+            </Link>
+            <button
+              type="button"
+              onClick={() => setOpen(true)}
+              className="flex size-11 items-center justify-center rounded-md hover:bg-slate-100"
+              aria-label="Abrir menú"
+            >
+              <Menu className="size-5" />
+            </button>
+          </div>
         </div>
+        {disabledCenterName && <DisabledCenterBanner name={disabledCenterName} />}
       </div>
 
       {/* Drawer móvil — siempre montado, se desliza con transición */}
@@ -153,43 +160,59 @@ export function AppShell({
 
       {/* Contenido */}
       <div className="flex min-w-0 flex-col lg:min-h-dvh">
-        <header className="sticky top-0 z-10 hidden items-center justify-between border-b border-slate-200 bg-white px-6 py-3 lg:flex">
-          <div className="text-sm text-slate-500">
-            {ROLE_LABELS[user.role]}
-            {user.scope ? ` · ${user.scope}` : ""}
-          </div>
-          <div className="flex items-center gap-3">
-            <Link
-              href="/notificaciones"
-              className="relative rounded-md p-2 text-slate-500 hover:bg-slate-100"
-              aria-label={`Notificaciones${unread ? `, ${unread} sin leer` : ""}`}
-            >
-              <Bell className="size-5" />
-              {unread > 0 && (
-                <span className="absolute right-1 top-1 flex size-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-semibold text-white">
-                  {unread > 9 ? "9+" : unread}
-                </span>
-              )}
-            </Link>
-            <div className="text-right">
-              <p className="text-sm font-medium text-slate-900">{user.name}</p>
+        <div className="sticky top-0 z-10 hidden lg:block">
+          <header className="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-3">
+            <div className="text-sm text-slate-500">
+              {ROLE_LABELS[user.role]}
+              {user.scope ? ` · ${user.scope}` : ""}
             </div>
-            <form action={logoutAction}>
-              <button
-                type="submit"
-                className="flex items-center gap-1.5 rounded-md border border-slate-300 px-2.5 py-1.5 text-sm text-slate-700 hover:bg-slate-50"
+            <div className="flex items-center gap-3">
+              <Link
+                href="/notificaciones"
+                className="relative rounded-md p-2 text-slate-500 hover:bg-slate-100"
+                aria-label={`Notificaciones${unread ? `, ${unread} sin leer` : ""}`}
               >
-                <LogOut className="size-4" />
-                Salir
-              </button>
-            </form>
-          </div>
-        </header>
+                <Bell className="size-5" />
+                {unread > 0 && (
+                  <span className="absolute right-1 top-1 flex size-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-semibold text-white">
+                    {unread > 9 ? "9+" : unread}
+                  </span>
+                )}
+              </Link>
+              <div className="text-right">
+                <p className="text-sm font-medium text-slate-900">{user.name}</p>
+              </div>
+              <form action={logoutAction}>
+                <button
+                  type="submit"
+                  className="flex items-center gap-1.5 rounded-md border border-slate-300 px-2.5 py-1.5 text-sm text-slate-700 hover:bg-slate-50"
+                >
+                  <LogOut className="size-4" />
+                  Salir
+                </button>
+              </form>
+            </div>
+          </header>
+          {disabledCenterName && <DisabledCenterBanner name={disabledCenterName} />}
+        </div>
 
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
           {children}
         </main>
       </div>
+    </div>
+  );
+}
+
+function DisabledCenterBanner({ name }: { name: string }) {
+  return (
+    <div className="flex items-start gap-2 border-b border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-800 sm:items-center sm:px-6">
+      <AlertTriangle className="mt-0.5 size-4 shrink-0 sm:mt-0" />
+      <p>
+        Tu centro <strong>{name}</strong> está desactivado. Puedes seguir
+        consultando su información, pero no se pueden registrar movimientos
+        hasta que el coordinador lo reactive.
+      </p>
     </div>
   );
 }
