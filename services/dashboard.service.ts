@@ -27,6 +27,8 @@ async function sumByType(
  *  Dashboard global (coordinador)
  * ------------------------------------------------------------------ */
 export async function getGlobalDashboard() {
+  // TODO todo en paralelo: la latencia a la base domina el tiempo de carga, así
+  // que se lanza todo a la vez en lugar de encadenar `await` uno tras otro.
   const [
     activeCampaigns,
     activeCenters,
@@ -38,6 +40,13 @@ export async function getGlobalDashboard() {
     transfers,
     pendingWaste,
     pendingDeliveries,
+    inventoryByCenterData,
+    receptionsByDayData,
+    topArticlesData,
+    categoryDistributionData,
+    wasteByCenterData,
+    campaignProgressData,
+    centerComparisonData,
   ] = await Promise.all([
     prisma.campaign.count({ where: { active: true } }),
     prisma.center.count({ where: { active: true } }),
@@ -53,6 +62,13 @@ export async function getGlobalDashboard() {
     prisma.movement.count({
       where: { type: MOVEMENT_TYPES.DELIVERY, status: DELIVERY_STATUS.PENDING },
     }),
+    inventoryByCenter(),
+    receptionsByDay(14),
+    topReceivedArticles(6),
+    categoryDistribution(),
+    wasteByCenter(),
+    campaignProgressSummary(),
+    centerComparison(),
   ]);
 
   return {
@@ -68,24 +84,24 @@ export async function getGlobalDashboard() {
       pendingWaste,
       pendingDeliveries,
     },
-    inventoryByCenter: await inventoryByCenter(),
-    receptionsByDay: await receptionsByDay(14),
-    topArticles: await topReceivedArticles(6),
-    categoryDistribution: await categoryDistribution(),
-    wasteByCenter: await wasteByCenter(),
-    campaignProgress: await campaignProgressSummary(),
-    centerComparison: await centerComparison(),
+    inventoryByCenter: inventoryByCenterData,
+    receptionsByDay: receptionsByDayData,
+    topArticles: topArticlesData,
+    categoryDistribution: categoryDistributionData,
+    wasteByCenter: wasteByCenterData,
+    campaignProgress: campaignProgressData,
+    centerComparison: centerComparisonData,
   };
 }
 
 export async function inventoryByCenter() {
-  const rows = await prisma.inventoryItem.groupBy({
-    by: ["centerId"],
-    _sum: { quantity: true },
-  });
-  const centers = await prisma.center.findMany({
-    select: { id: true, name: true },
-  });
+  const [rows, centers] = await Promise.all([
+    prisma.inventoryItem.groupBy({
+      by: ["centerId"],
+      _sum: { quantity: true },
+    }),
+    prisma.center.findMany({ select: { id: true, name: true } }),
+  ]);
   const nameById = new Map(centers.map((c) => [c.id, c.name]));
   return rows
     .map((r) => ({
@@ -123,17 +139,17 @@ export async function receptionsByDay(days: number, centerId?: string) {
 }
 
 export async function topReceivedArticles(limit: number, centerId?: string) {
-  const rows = await prisma.movement.groupBy({
-    by: ["articleId"],
-    where: {
-      type: MOVEMENT_TYPES.RECEPTION,
-      ...(centerId ? { centerId } : {}),
-    },
-    _sum: { quantity: true },
-  });
-  const articles = await prisma.article.findMany({
-    select: { id: true, name: true },
-  });
+  const [rows, articles] = await Promise.all([
+    prisma.movement.groupBy({
+      by: ["articleId"],
+      where: {
+        type: MOVEMENT_TYPES.RECEPTION,
+        ...(centerId ? { centerId } : {}),
+      },
+      _sum: { quantity: true },
+    }),
+    prisma.article.findMany({ select: { id: true, name: true } }),
+  ]);
   const nameById = new Map(articles.map((a) => [a.id, a.name]));
   return rows
     .map((r) => ({
@@ -160,14 +176,14 @@ export async function categoryDistribution(centerId?: string) {
 }
 
 export async function wasteByCenter() {
-  const rows = await prisma.movement.groupBy({
-    by: ["centerId"],
-    where: { type: MOVEMENT_TYPES.WASTE, status: WASTE_STATUS.APPROVED },
-    _sum: { quantity: true },
-  });
-  const centers = await prisma.center.findMany({
-    select: { id: true, name: true },
-  });
+  const [rows, centers] = await Promise.all([
+    prisma.movement.groupBy({
+      by: ["centerId"],
+      where: { type: MOVEMENT_TYPES.WASTE, status: WASTE_STATUS.APPROVED },
+      _sum: { quantity: true },
+    }),
+    prisma.center.findMany({ select: { id: true, name: true } }),
+  ]);
   const nameById = new Map(centers.map((c) => [c.id, c.name]));
   return rows.map((r) => ({
     center: nameById.get(r.centerId) ?? "—",
@@ -180,20 +196,16 @@ export async function campaignProgressSummary() {
     where: { active: true },
     select: { id: true, name: true },
   });
-  const out: {
-    campaign: string;
-    goals: number;
-    avgPercent: number;
-  }[] = [];
-  for (const c of campaigns) {
-    const progress = await getCampaignGoalProgress(c.id);
-    const avg =
-      progress.length > 0
-        ? progress.reduce((s, p) => s + p.percent, 0) / progress.length
-        : 0;
-    out.push({ campaign: c.name, goals: progress.length, avgPercent: avg });
-  }
-  return out;
+  return Promise.all(
+    campaigns.map(async (c) => {
+      const progress = await getCampaignGoalProgress(c.id);
+      const avg =
+        progress.length > 0
+          ? progress.reduce((s, p) => s + p.percent, 0) / progress.length
+          : 0;
+      return { campaign: c.name, goals: progress.length, avgPercent: avg };
+    }),
+  );
 }
 
 export async function centerComparison() {
@@ -201,39 +213,52 @@ export async function centerComparison() {
     where: { active: true },
     select: { id: true, name: true },
   });
-  const result = [];
-  for (const c of centers) {
-    const [receptions, deliveries, waste, transfersOut, stockAgg] =
-      await Promise.all([
-        sumByType(MOVEMENT_TYPES.RECEPTION, { centerId: c.id }),
-        sumByType(MOVEMENT_TYPES.DELIVERY, { centerId: c.id }),
-        sumByType(MOVEMENT_TYPES.WASTE, {
-          centerId: c.id,
-          status: WASTE_STATUS.APPROVED,
-        }),
-        sumByType(MOVEMENT_TYPES.TRANSFER_OUT, { centerId: c.id }),
-        prisma.inventoryItem.aggregate({
-          where: { centerId: c.id },
-          _sum: { quantity: true },
-        }),
-      ]);
-    result.push({
-      center: c.name,
-      receptions,
-      deliveries,
-      waste,
-      transfersOut,
-      stock: num(stockAgg._sum.quantity),
-    });
-  }
-  return result;
+  return Promise.all(
+    centers.map(async (c) => {
+      const [receptions, deliveries, waste, transfersOut, stockAgg] =
+        await Promise.all([
+          sumByType(MOVEMENT_TYPES.RECEPTION, { centerId: c.id }),
+          sumByType(MOVEMENT_TYPES.DELIVERY, { centerId: c.id }),
+          sumByType(MOVEMENT_TYPES.WASTE, {
+            centerId: c.id,
+            status: WASTE_STATUS.APPROVED,
+          }),
+          sumByType(MOVEMENT_TYPES.TRANSFER_OUT, { centerId: c.id }),
+          prisma.inventoryItem.aggregate({
+            where: { centerId: c.id },
+            _sum: { quantity: true },
+          }),
+        ]);
+      return {
+        center: c.name,
+        receptions,
+        deliveries,
+        waste,
+        transfersOut,
+        stock: num(stockAgg._sum.quantity),
+      };
+    }),
+  );
 }
 
 /* ------------------------------------------------------------------ *
  *  Dashboard de centro
  * ------------------------------------------------------------------ */
 export async function getCenterDashboard(centerId: string) {
-  const [center, inventory, recent] = await Promise.all([
+  // Todo en un solo lote: nada de esto depende de otra consulta.
+  const [
+    center,
+    inventory,
+    recent,
+    receptions,
+    deliveries,
+    waste,
+    transfersIn,
+    transfersOut,
+    byDay,
+    topArticles,
+    categories,
+  ] = await Promise.all([
     prisma.center.findUnique({ where: { id: centerId } }),
     prisma.inventoryItem.findMany({
       where: { centerId },
@@ -249,19 +274,15 @@ export async function getCenterDashboard(centerId: string) {
       orderBy: { createdAt: "desc" },
       take: 10,
     }),
+    sumByType(MOVEMENT_TYPES.RECEPTION, { centerId }),
+    sumByType(MOVEMENT_TYPES.DELIVERY, { centerId }),
+    sumByType(MOVEMENT_TYPES.WASTE, { centerId, status: WASTE_STATUS.APPROVED }),
+    sumByType(MOVEMENT_TYPES.TRANSFER_IN, { centerId }),
+    sumByType(MOVEMENT_TYPES.TRANSFER_OUT, { centerId }),
+    receptionsByDay(14, centerId),
+    topReceivedArticles(6, centerId),
+    categoryDistribution(centerId),
   ]);
-
-  const [receptions, deliveries, waste, transfersIn, transfersOut] =
-    await Promise.all([
-      sumByType(MOVEMENT_TYPES.RECEPTION, { centerId }),
-      sumByType(MOVEMENT_TYPES.DELIVERY, { centerId }),
-      sumByType(MOVEMENT_TYPES.WASTE, {
-        centerId,
-        status: WASTE_STATUS.APPROVED,
-      }),
-      sumByType(MOVEMENT_TYPES.TRANSFER_IN, { centerId }),
-      sumByType(MOVEMENT_TYPES.TRANSFER_OUT, { centerId }),
-    ]);
 
   const stockRows = inventory.map((it) => ({
     articleId: it.articleId,
@@ -272,12 +293,6 @@ export async function getCenterDashboard(centerId: string) {
     campaign: it.campaign.name,
     low: it.quantity.toNumber() <= LOW_STOCK_THRESHOLD,
   }));
-
-  const [byDay, topArticles, categories] = await Promise.all([
-    receptionsByDay(14, centerId),
-    topReceivedArticles(6, centerId),
-    categoryDistribution(centerId),
-  ]);
 
   return {
     center,

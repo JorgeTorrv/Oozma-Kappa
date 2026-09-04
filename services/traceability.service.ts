@@ -39,7 +39,10 @@ export type TraceEvent = {
 export async function listTraceableArticles(campaignId: string) {
   const rows = await prisma.movement.findMany({
     where: { campaignId },
-    select: { articleId: true, article: { select: { name: true, unit: true } } },
+    select: {
+      articleId: true,
+      article: { select: { name: true, unit: true, category: true } },
+    },
     distinct: ["articleId"],
     orderBy: { article: { name: "asc" } },
   });
@@ -47,12 +50,14 @@ export async function listTraceableArticles(campaignId: string) {
     id: r.articleId,
     name: r.article.name,
     unit: r.article.unit,
+    category: r.article.category,
   }));
 }
 
 export async function getResourceTrace(params: {
   campaignId: string;
-  articleId: string;
+  articleId?: string | null;
+  category?: string | null;
 }): Promise<{
   events: TraceEvent[];
   summary: {
@@ -65,7 +70,13 @@ export async function getResourceTrace(params: {
   };
 }> {
   const movements = await prisma.movement.findMany({
-    where: { campaignId: params.campaignId, articleId: params.articleId },
+    where: {
+      campaignId: params.campaignId,
+      ...(params.articleId ? { articleId: params.articleId } : {}),
+      ...(params.category && !params.articleId
+        ? { article: { category: params.category } }
+        : {}),
+    },
     include: {
       article: { select: { unit: true } },
       center: { select: { name: true } },

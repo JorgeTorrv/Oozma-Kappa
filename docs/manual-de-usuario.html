@@ -578,6 +578,97 @@
   html {
     scroll-behavior: smooth;
   }
+
+  /* ---------- Impresión / PDF ---------- */
+  @page {
+    size: A4;
+    margin: 16mm 15mm 18mm;
+  }
+  @media print {
+    :root,
+    :root[data-theme="dark"],
+    :root:not([data-theme="light"]) {
+      --ground: #ffffff;
+      --surface: #ffffff;
+      --surface-2: #f1f3ec;
+      --ink: #18241c;
+      --ink-soft: #3c4b40;
+      --muted: #5f6d60;
+      --line: #d3dac8;
+      --line-strong: #bcc6ac;
+      --brand: #1f5c3d;
+      --brand-ink: #123a27;
+      --brand-tint: #eef4ee;
+      --ok: #2f7d4f; --ok-tint: #eaf2e8;
+      --info: #3f6c88; --info-tint: #eaf0f3;
+      --warn: #8a5a1c; --warn-tint: #f4ecdd;
+      --danger: #a5372a; --danger-tint: #f5e6e3;
+      --plum: #5f5185; --plum-tint: #eeeaf3;
+      --shadow: none;
+    }
+    body {
+      font-size: 10.5pt;
+      line-height: 1.5;
+    }
+    .page {
+      max-width: none;
+      padding: 0;
+    }
+    .layout {
+      display: block;
+    }
+    main {
+      max-width: none;
+    }
+    .toc {
+      position: static;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0.8rem 1rem;
+      margin-bottom: 1.5rem;
+      break-inside: avoid;
+      columns: 2;
+    }
+    .masthead {
+      break-after: avoid;
+    }
+    section {
+      margin-bottom: 1.6rem;
+    }
+    section > h2 {
+      break-after: avoid;
+      padding-top: 0.8rem;
+    }
+    h3 {
+      break-after: avoid;
+    }
+    .module,
+    .card,
+    .mv,
+    .callout,
+    ol.steps > li,
+    .flow,
+    tr {
+      break-inside: avoid;
+    }
+    .grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .table-wrap {
+      overflow: visible;
+    }
+    a {
+      color: var(--ink);
+      text-decoration: none;
+    }
+    .card,
+    .module {
+      box-shadow: none;
+    }
+    footer {
+      break-before: avoid;
+    }
+  }
 </style>
 
 <div class="page">

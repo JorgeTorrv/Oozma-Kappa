@@ -7,8 +7,7 @@ import {
   listTraceableArticles,
 } from "@/services/traceability.service";
 import { PageHeader, EmptyState, StatCard } from "@/components/ui/page";
-import { Field, Select } from "@/components/ui/primitives";
-import { Button } from "@/components/ui/button";
+import { TraceControls } from "@/features/traceability/controls";
 import { TraceTimeline } from "@/features/traceability/timeline";
 import { formatQuantity } from "@/lib/format";
 
@@ -30,14 +29,30 @@ export default async function TrazabilidadPage({
         ? { id: user.campaignId ?? "__none__" }
         : { centers: { some: { centerId: user.centerId ?? "__none__" } } };
 
-  const campaigns = await prisma.campaign.findMany({
+  const campaignRows = await prisma.campaign.findMany({
     where: campaignWhere,
     select: { id: true, name: true },
     orderBy: { name: "asc" },
   });
 
+  // Artículos con movimientos por campaña — se mandan al cliente para llenar los
+  // desplegables sin un segundo viaje al servidor.
+  const articleLists = await Promise.all(
+    campaignRows.map((c) => listTraceableArticles(c.id)),
+  );
+  const campaigns = campaignRows.map((c, i) => ({
+    id: c.id,
+    name: c.name,
+    articles: articleLists[i].map((a) => ({
+      id: a.id,
+      name: a.name,
+      category: a.category,
+    })),
+  }));
+
   let campaignId = raw.campaignId;
   let articleId = raw.articleId;
+  let category = raw.category;
   let trace = null;
 
   if (raw.movimiento) {
@@ -45,30 +60,32 @@ export default async function TrazabilidadPage({
     if (t) {
       campaignId = t.campaignId;
       articleId = t.articleId;
+      category = undefined;
       trace = t;
     }
   }
 
-  // Valida que la campaña elegida esté dentro del ámbito.
+  // La campaña elegida debe estar dentro del ámbito del usuario.
   if (campaignId && !campaigns.some((c) => c.id === campaignId)) {
     campaignId = undefined;
     articleId = undefined;
+    category = undefined;
     trace = null;
   }
 
-  const articles = campaignId
-    ? await listTraceableArticles(campaignId)
-    : [];
-
-  if (!trace && campaignId && articleId) {
-    trace = await getResourceTrace({ campaignId, articleId });
+  if (!trace && campaignId && (articleId || category)) {
+    trace = await getResourceTrace({
+      campaignId,
+      articleId: articleId ?? null,
+      category: category ?? null,
+    });
   }
 
   return (
     <>
       <PageHeader
         title="Trazabilidad visual de los recursos"
-        description="Sigue el recorrido de un artículo: donación → centro → transferencias → entrega a una institución."
+        description="Sigue el recorrido de un artículo o de una categoría completa: donación → centro → transferencias → entrega a una institución."
         breadcrumbs={[
           { label: "Inicio", href: "/inicio" },
           { label: "Trazabilidad" },
@@ -76,53 +93,18 @@ export default async function TrazabilidadPage({
       />
 
       <div className="space-y-6">
-        <form
-          method="get"
-          className="grid grid-cols-1 gap-3 rounded-lg border border-slate-200 bg-white p-4 sm:grid-cols-3"
-        >
-          <Field label="Campaña" htmlFor="campaignId">
-            <Select
-              id="campaignId"
-              name="campaignId"
-              defaultValue={campaignId ?? ""}
-            >
-              <option value="">Selecciona…</option>
-              {campaigns.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          <Field label="Artículo" htmlFor="articleId">
-            <Select
-              id="articleId"
-              name="articleId"
-              defaultValue={articleId ?? ""}
-              disabled={!campaignId}
-            >
-              <option value="">
-                {campaignId ? "Selecciona…" : "Elige campaña primero"}
-              </option>
-              {articles.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.name}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          <div className="flex items-end">
-            <Button type="submit">Ver trazabilidad</Button>
-          </div>
-        </form>
+        <TraceControls
+          campaigns={campaigns}
+          current={{ campaignId, articleId, category }}
+        />
 
         {!trace ? (
           <EmptyState
-            title="Elige una campaña y un artículo"
+            title="Elige una campaña y luego un artículo o una categoría"
             description="También puedes llegar aquí desde el botón «Trazar» del historial de movimientos."
           />
         ) : trace.events.length === 0 ? (
-          <EmptyState title="Ese artículo no tiene movimientos en la campaña." />
+          <EmptyState title="No hay movimientos para esa selección en la campaña." />
         ) : (
           <>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">

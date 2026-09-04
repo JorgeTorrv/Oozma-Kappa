@@ -46,26 +46,26 @@ export async function getCampaignGoalProgress(
     orderBy: { createdAt: "asc" },
   });
 
-  const result: GoalProgress[] = [];
-  for (const g of goals) {
-    const current = await receivedTotal(campaignId, {
-      articleId: g.articleId,
-      category: g.category,
-    });
-    const target = g.targetQty.toNumber();
-    const cur = current.toNumber();
-    const percent = target > 0 ? Math.min(cur / target, 1) : 0;
-    result.push({
-      id: g.id,
-      label: g.article?.name ?? g.category ?? "Meta",
-      unit: g.unit,
-      target,
-      current: cur,
-      percent,
-      reached: cur >= target && target > 0,
-    });
-  }
-  return result;
+  return Promise.all(
+    goals.map(async (g) => {
+      const current = await receivedTotal(campaignId, {
+        articleId: g.articleId,
+        category: g.category,
+      });
+      const target = g.targetQty.toNumber();
+      const cur = current.toNumber();
+      const percent = target > 0 ? Math.min(cur / target, 1) : 0;
+      return {
+        id: g.id,
+        label: g.article?.name ?? g.category ?? "Meta",
+        unit: g.unit,
+        target,
+        current: cur,
+        percent,
+        reached: cur >= target && target > 0,
+      };
+    }),
+  );
 }
 
 /**
