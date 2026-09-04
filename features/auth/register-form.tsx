@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { registerVolunteerAction } from "./actions";
 import { Field, Input, Select } from "@/components/ui/primitives";
+import { PasswordInput } from "@/components/ui/password-input";
 import { SubmitButton } from "@/components/form";
 import type { ActionState } from "@/lib/result";
 
@@ -60,10 +61,9 @@ export function RegisterForm({ centers }: { centers: Center[] }) {
         hint="Mínimo 8 caracteres."
         required
       >
-        <Input
+        <PasswordInput
           id="password"
           name="password"
-          type="password"
           autoComplete="new-password"
           required
         />

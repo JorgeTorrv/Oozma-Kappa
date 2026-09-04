@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { loginAction } from "./actions";
 import { Field, Input } from "@/components/ui/primitives";
+import { PasswordInput } from "@/components/ui/password-input";
 import { SubmitButton } from "@/components/form";
 import type { ActionState } from "@/lib/result";
 
@@ -51,10 +52,9 @@ export function LoginForm() {
         error={fieldErrors.password}
         required
       >
-        <Input
+        <PasswordInput
           id="password"
           name="password"
-          type="password"
           autoComplete="current-password"
           aria-describedby="password-error"
         />
