@@ -12,8 +12,13 @@ export const metadata = { title: "Transferencias · Acopia" };
 export default async function TransferenciasPage() {
   const { user } = await requireCapabilityPage("transfer.create");
   const catalogs = await getMovementFormData(user.centerId);
+  const centerInactive =
+    Boolean(user.centerId) &&
+    !catalogs.centers.some((c) => c.id === user.centerId);
   const canRegister =
-    catalogs.campaigns.length > 0 && catalogs.centers.length >= 2;
+    !centerInactive &&
+    catalogs.campaigns.length > 0 &&
+    catalogs.centers.length >= 2;
 
   const { filter } = buildScopedFilter(user, {
     type: MOVEMENT_TYPES.TRANSFER_OUT,
@@ -45,11 +50,18 @@ export default async function TransferenciasPage() {
         }
       />
 
-      {!canRegister && (
+      {centerInactive ? (
         <EmptyState
-          title="No es posible transferir todavía"
-          description="Se necesitan al menos dos centros activos en una campaña."
+          title="Tu centro está desactivado"
+          description="Puedes seguir consultando su información, pero no se pueden registrar movimientos hasta que el coordinador lo reactive."
         />
+      ) : (
+        !canRegister && (
+          <EmptyState
+            title="No es posible transferir todavía"
+            description="Se necesitan al menos dos centros activos en una campaña."
+          />
+        )
       )}
 
       <MovementsTable items={items} />

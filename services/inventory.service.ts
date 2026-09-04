@@ -64,6 +64,28 @@ export function signedDelta(
   throw new RuleViolationError("Tipo de movimiento no reconocido.");
 }
 
+/**
+ * Un centro desactivado queda en sólo lectura: nadie —ni el coordinador
+ * general— puede registrar o resolver movimientos ahí. `recordMovement` ya lo
+ * comprueba; esto es para los pasos que NO pasan por ahí (merma pendiente,
+ * aprobación de merma).
+ */
+export async function assertCenterActive(
+  centerId: string,
+  db: Db = prisma,
+): Promise<void> {
+  const center = await db.center.findUnique({
+    where: { id: centerId },
+    select: { active: true },
+  });
+  if (!center) throw new NotFoundError("El centro no existe.");
+  if (!center.active) {
+    throw new RuleViolationError(
+      "Este centro está desactivado: no se pueden registrar movimientos en él.",
+    );
+  }
+}
+
 /** Stock actual (desde el snapshot). */
 export async function getStock(
   key: StockKey,
@@ -125,6 +147,11 @@ export async function recordMovement(
     if (!campaign) throw new NotFoundError("La campaña no existe.");
     if (!center) throw new NotFoundError("El centro no existe.");
     if (!article) throw new NotFoundError("El artículo no existe.");
+    if (!center.active) {
+      throw new RuleViolationError(
+        "Este centro está desactivado: no se pueden registrar movimientos en él.",
+      );
+    }
 
     // El centro debe participar en la campaña.
     const link = await tx.campaignCenter.findUnique({

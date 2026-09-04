@@ -12,6 +12,7 @@ import {
 } from "@/lib/errors";
 import {
   assertAvailable,
+  assertCenterActive,
   normalizeQuantity,
   recordMovement,
 } from "@/services/inventory.service";
@@ -191,6 +192,7 @@ export async function registerWaste(input: {
   }
 
   if (isWasteApprovalEnabled()) {
+    await assertCenterActive(input.centerId);
     const qty = normalizeQuantity(input.quantity);
     await assertAvailable(
       {
@@ -255,6 +257,7 @@ export async function approveWaste(input: {
   }
 
   return prisma.$transaction(async (tx) => {
+    await assertCenterActive(movement.centerId, tx);
     await assertAvailable(
       {
         centerId: movement.centerId,

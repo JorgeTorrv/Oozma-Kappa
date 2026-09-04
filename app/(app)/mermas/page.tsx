@@ -30,7 +30,12 @@ export default async function MermasPage() {
   const catalogs = canCreate
     ? await getMovementFormData(user.centerId)
     : null;
-  const canRegister = Boolean(catalogs && catalogs.campaigns.length > 0);
+  const centerInactive =
+    Boolean(user.centerId) &&
+    Boolean(catalogs) &&
+    !catalogs!.centers.some((c) => c.id === user.centerId);
+  const canRegister =
+    !centerInactive && Boolean(catalogs && catalogs.campaigns.length > 0);
 
   return (
     <>
@@ -57,7 +62,13 @@ export default async function MermasPage() {
       />
 
       <div className="space-y-6">
-        {canCreate && !canRegister && (
+        {canCreate && centerInactive && (
+          <EmptyState
+            title="Tu centro está desactivado"
+            description="Puedes seguir consultando su información, pero no se pueden registrar movimientos hasta que el coordinador lo reactive."
+          />
+        )}
+        {canCreate && !centerInactive && !canRegister && (
           <EmptyState title="No hay campañas activas para tu centro." />
         )}
 

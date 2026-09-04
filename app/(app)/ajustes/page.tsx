@@ -11,7 +11,10 @@ export const metadata = { title: "Ajustes de inventario · Acopia" };
 export default async function AjustesPage() {
   const { user } = await requireCapabilityPage("adjustment.create");
   const catalogs = await getMovementFormData(user.centerId);
-  const canRegister = catalogs.campaigns.length > 0;
+  const centerInactive =
+    Boolean(user.centerId) &&
+    !catalogs.centers.some((c) => c.id === user.centerId);
+  const canRegister = !centerInactive && catalogs.campaigns.length > 0;
 
   const { filter } = buildScopedFilter(user, {});
   const { items } = await fetchMovementsPage(filter, 1);
@@ -36,8 +39,15 @@ export default async function AjustesPage() {
         }
       />
 
-      {!canRegister && (
-        <EmptyState title="No hay campañas activas para tu centro." />
+      {centerInactive ? (
+        <EmptyState
+          title="Tu centro está desactivado"
+          description="Puedes seguir consultando su información, pero no se pueden registrar movimientos hasta que el coordinador lo reactive."
+        />
+      ) : (
+        !canRegister && (
+          <EmptyState title="No hay campañas activas para tu centro." />
+        )
       )}
 
       {adjustments.length > 0 ? (

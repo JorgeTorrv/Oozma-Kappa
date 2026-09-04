@@ -11,6 +11,7 @@ import {
   registerReception,
   registerDelivery,
   registerWaste,
+  approveWaste,
 } from "../services/movements.service";
 import { MOVEMENT_TYPES } from "../lib/constants";
 
@@ -318,5 +319,90 @@ describe("InventoryService", () => {
     const check = await verifyConsistency(key());
     expect(check.consistent).toBe(true);
     expect(check.snapshot.toNumber()).toBe(75);
+  });
+
+  it("un centro desactivado no admite recepciones", async () => {
+    await prisma.center.update({
+      where: { id: fx.centerA.id },
+      data: { active: false },
+    });
+    await expect(
+      registerReception({
+        ...key(),
+        quantity: 10,
+        actorUserId: fx.managerA.id,
+        donor: null,
+      }),
+    ).rejects.toThrow(/desactivado/i);
+  });
+
+  it("un centro desactivado no admite mermas (ni siquiera pendientes de aprobación)", async () => {
+    await registerReception({
+      ...key(),
+      quantity: 10,
+      actorUserId: fx.managerA.id,
+      donor: null,
+    });
+    await prisma.center.update({
+      where: { id: fx.centerA.id },
+      data: { active: false },
+    });
+    await expect(
+      registerWaste({
+        ...key(),
+        quantity: 1,
+        actorUserId: fx.managerA.id,
+        reason: "Caducidad",
+      }),
+    ).rejects.toThrow(/desactivado/i);
+  });
+
+  it("una transferencia falla si el centro de origen o el de destino está desactivado", async () => {
+    await registerReception({
+      ...key(),
+      quantity: 50,
+      actorUserId: fx.managerA.id,
+      donor: null,
+    });
+    await prisma.center.update({
+      where: { id: fx.centerB.id },
+      data: { active: false },
+    });
+    await expect(
+      executeTransfer({
+        campaignId: fx.campaign.id,
+        fromCenterId: fx.centerA.id,
+        toCenterId: fx.centerB.id,
+        articleId: fx.article.id,
+        quantity: 10,
+        actorUserId: fx.managerA.id,
+      }),
+    ).rejects.toThrow(/desactivado/i);
+    // Tampoco cambió nada en el origen: la transacción se revirtió entera.
+    expect(await stockOf(fx.centerA.id, fx.campaign.id, fx.article.id)).toBe(50);
+  });
+
+  it("aprobar una merma pendiente falla si el centro se desactivó mientras tanto", async () => {
+    await registerReception({
+      ...key(),
+      quantity: 10,
+      actorUserId: fx.managerA.id,
+      donor: null,
+    });
+    const { movementId } = await registerWaste({
+      ...key(),
+      quantity: 2,
+      actorUserId: fx.managerA.id,
+      reason: "Daño",
+    });
+    await prisma.center.update({
+      where: { id: fx.centerA.id },
+      data: { active: false },
+    });
+    await expect(
+      approveWaste({ movementId, actorUserId: fx.managerA.id }),
+    ).rejects.toThrow(/desactivado/i);
+    // El stock no bajó: la merma sigue pendiente, no aprobada.
+    expect(await stockOf(fx.centerA.id, fx.campaign.id, fx.article.id)).toBe(10);
   });
 });

@@ -12,7 +12,10 @@ export const metadata = { title: "Registrar recepción · Acopia" };
 export default async function RecepcionesPage() {
   const { user } = await requireCapabilityPage("reception.create");
   const catalogs = await getMovementFormData(user.centerId);
-  const canRegister = catalogs.campaigns.length > 0;
+  const centerInactive =
+    Boolean(user.centerId) &&
+    !catalogs.centers.some((c) => c.id === user.centerId);
+  const canRegister = !centerInactive && catalogs.campaigns.length > 0;
 
   const { filter } = buildScopedFilter(user, { type: MOVEMENT_TYPES.RECEPTION });
   const { items } = await fetchMovementsPage(filter, 1);
@@ -36,11 +39,18 @@ export default async function RecepcionesPage() {
         }
       />
 
-      {!canRegister && (
+      {centerInactive ? (
         <EmptyState
-          title="No hay campañas activas para tu centro"
-          description="Pide al coordinador que active una campaña y vincule tu centro."
+          title="Tu centro está desactivado"
+          description="Puedes seguir consultando su información, pero no se pueden registrar movimientos hasta que el coordinador lo reactive."
         />
+      ) : (
+        !canRegister && (
+          <EmptyState
+            title="No hay campañas activas para tu centro"
+            description="Pide al coordinador que active una campaña y vincule tu centro."
+          />
+        )
       )}
 
       <MovementsTable items={items} />
