@@ -177,7 +177,7 @@ export async function registerVolunteerAction(
       title: "Nueva solicitud de voluntariado",
       body: `${user.name} solicitó unirse a ${center.name}.`,
       role: ROLES.COORDINADOR_GENERAL,
-      link: "/usuarios",
+      link: "/solicitudes",
     }).catch(() => undefined);
 
     return ok(undefined, "registered");

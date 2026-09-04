@@ -73,7 +73,6 @@ const COORDINATOR: Capability[] = [
   "notifications.read",
   "traceability.read",
   "export.data",
-  "team.manage",
 ];
 
 const CENTER_MANAGER: Capability[] = [

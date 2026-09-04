@@ -1,55 +1,73 @@
+import Link from "next/link";
 import { requireCapabilityPage } from "@/lib/auth/dal";
 import { prisma } from "@/lib/db";
 import { PageHeader } from "@/components/ui/page";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/primitives";
 import { Table, TBody, TH, THead, TR } from "@/components/ui/table";
 import { DialogButton } from "@/components/ui/dialog";
 import { UserForm } from "@/features/catalog/forms";
 import { UserRow } from "@/features/catalog/user-row";
-import { VolunteerPanel } from "@/features/team/panel";
-import { APPROVAL_STATUS, ROLE_LABELS, type Role } from "@/lib/constants";
+import { PeopleFilters } from "@/features/team/filters";
+import {
+  APPROVAL_STATUS,
+  ROLE_LABELS,
+  ROLE_LIST,
+  type Role,
+} from "@/lib/constants";
+import { UserCheck } from "lucide-react";
 
 export const metadata = { title: "Usuarios · Acopia" };
 
-export default async function UsuariosPage() {
+export default async function UsuariosPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | undefined>>;
+}) {
   const { user } = await requireCapabilityPage("users.manage");
+  const raw = await searchParams;
+  const role = raw.role || undefined;
+  const centerId = raw.centerId || undefined;
+  const status = raw.status;
 
   const [users, centers, institutions, campaigns, pendingCount] =
     await Promise.all([
-    prisma.user.findMany({
-      include: {
-        center: { select: { name: true } },
-        institution: { select: { name: true } },
-        campaign: { select: { name: true } },
-      },
-      orderBy: [{ active: "desc" }, { name: "asc" }],
-    }),
-    prisma.center.findMany({
-      where: { active: true },
-      select: { id: true, name: true },
-      orderBy: { name: "asc" },
-    }),
-    prisma.recipientInstitution.findMany({
-      where: { active: true },
-      select: { id: true, name: true },
-      orderBy: { name: "asc" },
-    }),
-    prisma.campaign.findMany({
-      select: { id: true, name: true },
-      orderBy: { name: "asc" },
-    }),
-    prisma.user.count({
-      where: {
-        role: "VOLUNTARIO_CENTRO",
-        approvalStatus: APPROVAL_STATUS.PENDING,
-      },
-    }),
-  ]);
+      prisma.user.findMany({
+        where: {
+          ...(role ? { role } : {}),
+          ...(centerId ? { centerId } : {}),
+          ...(status === "active"
+            ? { active: true }
+            : status === "inactive"
+              ? { active: false }
+              : {}),
+        },
+        include: {
+          center: { select: { name: true } },
+          institution: { select: { name: true } },
+          campaign: { select: { name: true } },
+        },
+        orderBy: [{ active: "desc" }, { name: "asc" }],
+      }),
+      prisma.center.findMany({
+        where: { active: true },
+        select: { id: true, name: true },
+        orderBy: { name: "asc" },
+      }),
+      prisma.recipientInstitution.findMany({
+        where: { active: true },
+        select: { id: true, name: true },
+        orderBy: { name: "asc" },
+      }),
+      prisma.campaign.findMany({
+        select: { id: true, name: true },
+        orderBy: { name: "asc" },
+      }),
+      prisma.user.count({
+        where: {
+          role: "VOLUNTARIO_CENTRO",
+          approvalStatus: APPROVAL_STATUS.PENDING,
+        },
+      }),
+    ]);
 
   return (
     <>
@@ -68,19 +86,25 @@ export default async function UsuariosPage() {
         }
       />
 
-      <div className="space-y-6">
+      <div className="space-y-4">
         {pendingCount > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                Solicitudes de voluntariado ({pendingCount})
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <VolunteerPanel showActive={false} />
-            </CardContent>
-          </Card>
+          <Link
+            href="/solicitudes"
+            className="flex items-center gap-2 rounded-lg border border-brand-200 bg-brand-50 px-4 py-3 text-sm font-medium text-brand-800 hover:bg-brand-100"
+          >
+            <UserCheck className="size-4 shrink-0" />
+            {pendingCount} solicitud{pendingCount === 1 ? "" : "es"} de
+            voluntariado pendiente{pendingCount === 1 ? "" : "s"} — ver
+            solicitudes
+          </Link>
         )}
+
+        <PeopleFilters
+          roles={ROLE_LIST}
+          centers={centers}
+          current={{ role, centerId, status }}
+          basePath="/usuarios"
+        />
 
         <Table>
           <THead>

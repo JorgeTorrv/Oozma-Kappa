@@ -22,6 +22,7 @@ export type IconKey =
   | "institution"
   | "users"
   | "team"
+  | "requests"
   | "bell"
   | "inbox";
 
@@ -151,6 +152,12 @@ const GROUPS: { title?: string; rules: Rule[] }[] = [
         href: "/mi-equipo",
         icon: "team",
         caps: ["team.manage"],
+      },
+      {
+        label: "Solicitudes",
+        href: "/solicitudes",
+        icon: "requests",
+        caps: ["users.manage"],
       },
       {
         label: "Usuarios",

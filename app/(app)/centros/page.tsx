@@ -1,12 +1,15 @@
+import Link from "next/link";
 import { requireCapabilityPage } from "@/lib/auth/dal";
 import { prisma } from "@/lib/db";
 import { PageHeader, EmptyState } from "@/components/ui/page";
 import { Badge } from "@/components/ui/primitives";
+import { buttonVariants } from "@/components/ui/button";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { DialogButton } from "@/components/ui/dialog";
 import { CenterForm } from "@/features/catalog/forms";
 import { ToggleActiveButton } from "@/features/catalog/row-actions";
 import { toggleCenterAction } from "@/features/catalog/actions";
+import { Users } from "lucide-react";
 
 export const metadata = { title: "Centros · Acopia" };
 
@@ -62,6 +65,16 @@ export default async function CentrosPage() {
                   </TD>
                   <TD className="text-right">
                     <div className="flex justify-end gap-2">
+                      <Link
+                        href={`/centros/${c.id}`}
+                        className={buttonVariants({
+                          variant: "outline",
+                          size: "sm",
+                        })}
+                      >
+                        <Users className="size-4" />
+                        Equipo
+                      </Link>
                       <DialogButton
                         label="Editar"
                         title={`Editar centro: ${c.name}`}

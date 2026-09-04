@@ -1,18 +1,19 @@
 import { requireCapabilityPage } from "@/lib/auth/dal";
-import { ROLES } from "@/lib/constants";
 import { PageHeader, EmptyState } from "@/components/ui/page";
 import { VolunteerPanel } from "@/features/team/panel";
 
 export const metadata = { title: "Mi equipo · Acopia" };
 
+/**
+ * Sólo para el encargado de centro: su equipo de voluntarios, acotado a SU
+ * centro. El coordinador general ya no usa esta pantalla — para ver quién
+ * forma parte de un centro entra desde /centros; las solicitudes de
+ * voluntariado de todos los centros se aprueban en /solicitudes.
+ */
 export default async function MiEquipoPage() {
-  const { user } = await requireCapabilityPage("team.manage", "users.manage");
+  const { user } = await requireCapabilityPage("team.manage");
 
-  // El encargado ve sólo su centro. El coordinador ve todos.
-  const scopedCenter =
-    user.role === ROLES.ENCARGADO_CENTRO ? user.centerId : undefined;
-
-  if (user.role === ROLES.ENCARGADO_CENTRO && !user.centerId) {
+  if (!user.centerId) {
     return (
       <EmptyState title="Tu cuenta no tiene un centro asignado. Contacta al coordinador." />
     );
@@ -28,7 +29,7 @@ export default async function MiEquipoPage() {
           { label: "Mi equipo" },
         ]}
       />
-      <VolunteerPanel centerId={scopedCenter ?? undefined} />
+      <VolunteerPanel centerId={user.centerId} />
     </>
   );
 }

@@ -482,6 +482,7 @@ export async function toggleUserAction(id: string): Promise<ActionState> {
       entityId: id,
     });
     revalidatePath("/usuarios");
+    if (u.centerId) revalidatePath(`/centros/${u.centerId}`);
     return ok(undefined, u.active ? "Usuario desactivado." : "Usuario activado.");
   });
 }
@@ -568,7 +569,9 @@ export async function approveVolunteerAction(
     }).catch(() => undefined);
 
     revalidatePath("/mi-equipo");
+    revalidatePath("/solicitudes");
     revalidatePath("/usuarios");
+    if (volunteer.centerId) revalidatePath(`/centros/${volunteer.centerId}`);
     return ok(undefined, "Voluntario aprobado.");
   });
 }
@@ -605,7 +608,9 @@ export async function rejectVolunteerAction(
     }).catch(() => undefined);
 
     revalidatePath("/mi-equipo");
+    revalidatePath("/solicitudes");
     revalidatePath("/usuarios");
+    if (volunteer.centerId) revalidatePath(`/centros/${volunteer.centerId}`);
     return ok(undefined, "Solicitud rechazada.");
   });
 }
@@ -633,6 +638,7 @@ export async function toggleVolunteerActiveAction(
     });
     revalidatePath("/mi-equipo");
     revalidatePath("/usuarios");
+    if (volunteer.centerId) revalidatePath(`/centros/${volunteer.centerId}`);
     return ok(undefined, next ? "Voluntario reactivado." : "Voluntario desactivado.");
   });
 }

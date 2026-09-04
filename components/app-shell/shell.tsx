@@ -24,6 +24,7 @@ import {
   PackageSearch,
   Users,
   UsersRound,
+  UserCheck,
   ClipboardCheck,
   type LucideIcon,
 } from "lucide-react";
@@ -50,6 +51,7 @@ const ICONS: Record<IconKey, LucideIcon> = {
   institution: Building2,
   users: Users,
   team: UsersRound,
+  requests: UserCheck,
   bell: Bell,
   inbox: ClipboardCheck,
 };
