@@ -134,11 +134,11 @@ export function AppShell({
           aria-modal="true"
           aria-label="Menú de navegación"
           className={cn(
-            "absolute left-0 top-0 h-full w-72 bg-white shadow-xl transition-transform duration-300 ease-out motion-reduce:transition-none",
+            "absolute left-0 top-0 flex h-full w-72 flex-col overflow-hidden bg-white shadow-xl transition-transform duration-300 ease-out motion-reduce:transition-none",
             open ? "translate-x-0" : "-translate-x-full",
           )}
         >
-          <div className="flex items-center justify-between px-4 py-3">
+          <div className="flex shrink-0 items-center justify-between px-4 py-3">
             <span className="font-semibold">Menú</span>
             <button
               type="button"
@@ -229,13 +229,13 @@ function SidebarContent({
   onNavigate?: () => void;
 }) {
   return (
-    <div className="flex h-full flex-col overflow-y-auto">
+    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
       <div className="hidden px-4 py-4 lg:block">
         <Link href="/" aria-label="Acopia — inicio">
           <Logo height={80} />
         </Link>
       </div>
-      <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-3">
+      <nav className="flex-1 space-y-5 px-3 py-3">
         {nav.map((group, gi) => (
           <div key={gi}>
             {group.title && (
