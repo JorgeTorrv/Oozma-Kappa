@@ -53,6 +53,10 @@ Comprueba en Supabase → **Table editor** que aparecen las tablas y filas.
    mano. `vercel-build` corre `prisma generate && prisma migrate deploy &&
    next build`, así que **cada deploy aplica las migraciones pendientes solo**
    (necesita `DIRECT_URL` en las variables, ver abajo).
+3b. **Región** (rendimiento): Supabase está en `us-west-2` (Oregón). Para que
+   las funciones no crucen el país, ponlas cerca: Project Settings → **Functions**
+   → *Region* → **Portland, USA West (pdx1)**. En el plan Hobby se elige aquí,
+   no en `vercel.json`.
 4. **Environment Variables** (Project Settings → Environment Variables), para
    *Production* y *Preview*:
 
