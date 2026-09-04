@@ -151,7 +151,7 @@ export function ActionButton({
           onClick={(e) => {
             if (e.target === confirmRef.current) closeConfirm();
           }}
-          className="m-auto w-[calc(100vw-1.5rem)] max-w-sm rounded-xl border border-slate-200 bg-white p-0 text-slate-900 shadow-2xl backdrop:bg-slate-900/50"
+          className="m-auto w-[calc(100vw-1.5rem)] max-w-sm rounded-xl border border-slate-200 bg-white p-0 text-left text-slate-900 shadow-2xl backdrop:bg-slate-900/50"
         >
           <div className="px-5 py-4">
             <h2 className="text-sm font-semibold text-slate-900">{confirmTitle}</h2>

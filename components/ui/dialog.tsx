@@ -81,7 +81,7 @@ export function DialogButton({
             if (e.target === ref.current) close();
           }}
           className={cn(
-            "m-auto w-[calc(100vw-1.5rem)] rounded-xl border border-slate-200 bg-white p-0 text-slate-900 shadow-2xl backdrop:bg-slate-900/50",
+            "m-auto w-[calc(100vw-1.5rem)] rounded-xl border border-slate-200 bg-white p-0 text-left text-slate-900 shadow-2xl backdrop:bg-slate-900/50",
             maxW,
           )}
         >
