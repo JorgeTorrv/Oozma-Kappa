@@ -13,6 +13,7 @@ import { PublicCentersMap } from "@/features/public/centers-map";
 import { HeroMap } from "@/features/public/hero-map";
 import { markerBadge } from "@/components/maps/marker-badge";
 import { Logo } from "@/components/brand/logo";
+import { formatPhone, telHref } from "@/lib/format";
 
 export const metadata: Metadata = {
   title: "Acopia — Dónde llevar tus donaciones",
@@ -205,10 +206,10 @@ export default async function LandingPage() {
                             <p className="flex gap-2">
                               <Phone className="mt-0.5 size-4 shrink-0 text-slate-400" />
                               <a
-                                href={`tel:${c.phone.replace(/\s+/g, "")}`}
-                                className="font-medium text-brand-700 hover:underline"
+                                href={telHref(c.phone)}
+                                className="font-medium tabular-nums text-brand-700 hover:underline"
                               >
-                                {c.phone}
+                                {formatPhone(c.phone)}
                               </a>
                             </p>
                           )}

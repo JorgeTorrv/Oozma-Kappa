@@ -57,3 +57,23 @@ export function formatPercent(value: number): string {
     maximumFractionDigits: 1,
   }).format(value);
 }
+
+/**
+ * Formatea un teléfono para lectura. Internamente los teléfonos se guardan como
+ * sólo dígitos; aquí se agrupan (833 344 1244). Soporta 10 dígitos (MX local),
+ * +52 y +1. Si no encaja, devuelve los dígitos tal cual.
+ */
+export function formatPhone(raw: string | null | undefined): string {
+  if (!raw) return "—";
+  const d = raw.replace(/\D/g, "");
+  const group = (n: string) => `${n.slice(0, 3)} ${n.slice(3, 6)} ${n.slice(6)}`;
+  if (d.length === 10) return group(d);
+  if (d.length === 12 && d.startsWith("52")) return `+52 ${group(d.slice(2))}`;
+  if (d.length === 11 && d.startsWith("1")) return `+1 ${group(d.slice(1))}`;
+  return d || "—";
+}
+
+/** Sólo dígitos, para enlaces `tel:`. */
+export function telHref(raw: string | null | undefined): string {
+  return `tel:${(raw ?? "").replace(/\D/g, "")}`;
+}

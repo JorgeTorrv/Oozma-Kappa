@@ -3,6 +3,7 @@
 import { TR, TD } from "@/components/ui/table";
 import { Badge } from "@/components/ui/primitives";
 import { DialogButton } from "@/components/ui/dialog";
+import { formatPhone } from "@/lib/format";
 import { ToggleActiveButton } from "./row-actions";
 import { toggleUserAction } from "./actions";
 import { UserForm } from "./forms";
@@ -46,10 +47,12 @@ export function UserRow({
             </Badge>
           )}
         </TD>
-        <TD className="text-slate-500">
-          {user.phone ?? "—"}
+        <TD className="text-slate-500 tabular-nums">
+          {user.phone ? formatPhone(user.phone) : "—"}
           {user.email && (
-            <span className="block text-xs text-slate-400">{user.email}</span>
+            <span className="block text-xs text-slate-400 [font-variant-numeric:normal]">
+              {user.email}
+            </span>
           )}
         </TD>
         <TD>{user.roleLabel}</TD>

@@ -7,6 +7,7 @@ import {
   type MapMarker,
 } from "@/components/maps/leaflet-markers-map";
 import { markerBadge } from "@/components/maps/marker-badge";
+import { formatPhone, telHref } from "@/lib/format";
 
 const esc = (s: string) =>
   s.replace(/[&<>"]/g, (c) =>
@@ -36,7 +37,7 @@ export function PublicCentersMap({ centers }: { centers: MapCenter[] }) {
               ? `<br/><span style="color:#64748b">${esc(c.address)}</span>`
               : "") +
             (c.phone
-              ? `<br/><a href="tel:${esc(c.phone.replace(/\s+/g, ""))}" style="color:#1f5c3d">${esc(c.phone)}</a>`
+              ? `<br/><a href="${esc(telHref(c.phone))}" style="color:#1f5c3d">${esc(formatPhone(c.phone))}</a>`
               : ""),
         })),
     [centers],

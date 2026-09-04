@@ -25,6 +25,7 @@
     "db:studio": "prisma studio",
     "db:reset-demo": "prisma migrate reset --force",
     "db:go-live": "tsx scripts/go-live.ts",
+    "db:normalize-phones": "tsx scripts/normalize-phones.ts",
     "setup": "prisma generate && prisma migrate deploy && prisma db seed",
     "demo": "node scripts/demo.mjs",
     "postinstall": "prisma generate"

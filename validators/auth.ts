@@ -48,13 +48,15 @@ export const volunteerRegisterSchema = z.object({
     .min(1, "Escribe tu apellido.")
     .max(80, "Apellido demasiado largo."),
   // El teléfono es obligatorio: es el identificador con el que se inicia sesión.
+  // Se guarda como sólo dígitos para que dé igual cómo se teclee.
   phone: z
     .string()
     .trim()
     .min(1, "El teléfono es obligatorio.")
     .max(40)
+    .transform(normalizePhone)
     .refine(
-      (v) => normalizePhone(v).length >= 10,
+      (v) => v.length >= 10,
       "El teléfono debe tener al menos 10 dígitos.",
     ),
   // El correo es opcional; si se escribe, debe ser válido.

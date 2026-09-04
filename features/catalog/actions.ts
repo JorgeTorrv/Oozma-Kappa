@@ -212,7 +212,7 @@ export async function createCenterAction(
             firstName: d.managerFirstName,
             lastName: d.managerLastName,
             email: d.managerEmail ?? null,
-            phone: d.managerPhone ?? null,
+            phone: d.managerPhone ? normalizePhone(d.managerPhone) : null,
             passwordHash: managerHash as string,
             role: ROLES.ENCARGADO_CENTRO,
             centerId: c.id,

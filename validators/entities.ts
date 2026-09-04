@@ -5,15 +5,32 @@ import { normalizePhone } from "./auth";
 
 const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-/** Teléfono obligatorio (identificador de acceso). Al menos 10 dígitos. */
+/**
+ * Teléfono obligatorio (identificador de acceso). Se guarda SIEMPRE como sólo
+ * dígitos para que dé igual cómo se teclee al iniciar sesión (833-344-1244 y
+ * 8333441244 quedan iguales). Al menos 10 dígitos.
+ */
 const requiredPhone = z
   .string()
   .trim()
   .min(1, "El teléfono es obligatorio.")
   .max(40)
+  .transform(normalizePhone)
+  .refine((v) => v.length >= 10, "El teléfono debe tener al menos 10 dígitos.");
+
+/** Teléfono opcional, también normalizado a sólo dígitos. */
+const optionalPhone = z
+  .string()
+  .trim()
+  .max(40)
+  .optional()
+  .transform((v) => {
+    const d = v ? normalizePhone(v) : "";
+    return d.length > 0 ? d : undefined;
+  })
   .refine(
-    (v) => normalizePhone(v).length >= 10,
-    "El teléfono debe tener al menos 10 dígitos.",
+    (v) => v === undefined || v.length >= 7,
+    "El teléfono no parece válido.",
   );
 
 /** Correo opcional; si se escribe, debe ser válido. */
@@ -51,7 +68,7 @@ export const centerSchema = z.object({
   name: requiredText("Nombre", 3, 120),
   institution: optionalText(160),
   address: optionalText(240),
-  phone: optionalText(40),
+  phone: optionalPhone,
   latitude: z
     .string()
     .trim()

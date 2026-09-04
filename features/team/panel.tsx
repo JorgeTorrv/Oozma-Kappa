@@ -3,7 +3,7 @@ import { APPROVAL_STATUS, ROLES } from "@/lib/constants";
 import { EmptyState } from "@/components/ui/page";
 import { Badge } from "@/components/ui/primitives";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
-import { formatDate } from "@/lib/format";
+import { formatDate, formatPhone } from "@/lib/format";
 import {
   VolunteerDecisionButtons,
   VolunteerToggleButton,
@@ -65,7 +65,7 @@ export async function VolunteerPanel({
                 <TR key={u.id}>
                   <TD className="font-medium text-slate-900">{u.name}</TD>
                   <TD className="text-slate-500">
-                    {[u.phone, u.email].filter(Boolean).join(" · ") || "—"}
+                    {[u.phone ? formatPhone(u.phone) : null, u.email].filter(Boolean).join(" · ") || "—"}
                   </TD>
                   {!centerId && <TD>{u.center?.name ?? "—"}</TD>}
                   <TD className="text-slate-500">{formatDate(u.createdAt)}</TD>
@@ -102,7 +102,7 @@ export async function VolunteerPanel({
                   <TR key={u.id}>
                     <TD className="font-medium text-slate-900">{u.name}</TD>
                     <TD className="text-slate-500">
-                      {[u.phone, u.email].filter(Boolean).join(" · ") || "—"}
+                      {[u.phone ? formatPhone(u.phone) : null, u.email].filter(Boolean).join(" · ") || "—"}
                     </TD>
                     {!centerId && <TD>{u.center?.name ?? "—"}</TD>}
                     <TD>

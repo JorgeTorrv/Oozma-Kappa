@@ -70,9 +70,9 @@ export function AppShell({
   const close = React.useCallback(() => setOpen(false), []);
 
   return (
-    <div className="min-h-screen lg:grid lg:grid-cols-[260px_1fr]">
-      {/* Sidebar desktop */}
-      <aside className="hidden border-r border-slate-200 bg-white lg:flex lg:flex-col">
+    <div className="min-h-screen lg:grid lg:grid-cols-[260px_1fr] lg:items-start">
+      {/* Sidebar desktop: fija a la altura de la ventana y acompaña el scroll. */}
+      <aside className="sticky top-0 hidden h-dvh border-r border-slate-200 bg-white lg:flex lg:flex-col">
         <SidebarContent nav={nav} pathname={pathname} unread={unread} />
       </aside>
 
@@ -150,8 +150,8 @@ export function AppShell({
       </div>
 
       {/* Contenido */}
-      <div className="flex min-w-0 flex-col">
-        <header className="hidden items-center justify-between border-b border-slate-200 bg-white px-6 py-3 lg:flex">
+      <div className="flex min-w-0 flex-col lg:min-h-dvh">
+        <header className="sticky top-0 z-10 hidden items-center justify-between border-b border-slate-200 bg-white px-6 py-3 lg:flex">
           <div className="text-sm text-slate-500">
             {ROLE_LABELS[user.role]}
             {user.scope ? ` · ${user.scope}` : ""}
